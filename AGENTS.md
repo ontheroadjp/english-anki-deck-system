@@ -31,4 +31,4 @@ SQLite DB から review JSON を出力。
 
 ### review-ui-agent
 
-`web/review/` の静的レビュー UI を保守。
+`frontend/review/` の静的レビュー UI を保守。
