@@ -1,0 +1,15 @@
+[Unit]
+Description=Dict English backend API
+After=network.target
+
+[Service]
+Type=simple
+User=dict-english
+Group=dict-english
+Environment=PYTHONUNBUFFERED=1
+ExecStart=sh -lc 'set -a; . "$HOME/.config/dict-english/dict-english.env"; set +a; cd "$DICT_ENGLISH_APP_DIR/backend" && exec python3 -m vocabdb serve-api --db "$DICT_ENGLISH_DB" --host "$DICT_ENGLISH_HOST" --port "$DICT_ENGLISH_PORT"'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
