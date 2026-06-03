@@ -2,7 +2,7 @@
 
 ## Top-Level Layout
 
-- `backend/`: Python application code. Contains the `vocabdb` package, its tests, the imported Anki TSV source data, and the pytest configuration. Commands are executed from this directory (`backend/vocabdb/cli.py:15-16`, `backend/vocabdb/cli.py:38`).
+- `backend/`: Python application code. Contains the `vocabdb` package, its tests, the imported Anki TSV source data, and Python package/test configuration. Commands are executed from this directory (`backend/vocabdb/cli.py:15-18`, `backend/vocabdb/cli.py:38-47`).
 - `frontend/`: static browser assets. Currently contains only the review UI (`frontend/review/index.html:1-39`).
 - `docs/`: repository documentation and the AI repo profile. The profile lists documentation roots and primary docs (`docs/.ai/repo.profile.json:4-10`, `docs/.ai/repo.profile.json:37-40`).
 - `README.md`: user-facing feature, command, and architecture summary.
@@ -11,10 +11,11 @@
 
 ## backend/
 
-- `backend/vocabdb/`: Python package implementing the CLI, SQLite schema, import logic, validation, and JSON export. The CLI imports and dispatches functions from `db`, `importers`, `validation`, and `exporters` (`backend/vocabdb/cli.py:9-12`, `backend/vocabdb/cli.py:19-77`). The module entry point is `backend/vocabdb/__main__.py:1-3`.
-- `backend/tests/`: pytest test suite. All tests import from the `vocabdb` package (`backend/tests/test_vocabdb.py:5-8`).
+- `backend/vocabdb/`: Python package implementing the CLI, SQLite schema, import logic, validation, JSON export, and FastAPI REST API. The CLI imports and dispatches functions from `db`, `importers`, `validation`, and `exporters`, and imports the API app factory only when serving the API (`backend/vocabdb/cli.py:9-12`, `backend/vocabdb/cli.py:20-101`). The module entry point is `backend/vocabdb/__main__.py:1-3`.
+- `backend/vocabdb/api.py`: FastAPI app factory and API-specific SQLite serialization for `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/api.py:10-124`).
+- `backend/tests/`: pytest test suite. Tests import from the `vocabdb` package and use FastAPI's `TestClient` for API coverage (`backend/tests/test_vocabdb.py:5-10`, `backend/tests/test_vocabdb.py:170-224`).
 - `backend/anki_csv/`: current tracked Anki TSV source data. The importer expects the column order encoded by `ANKI_COLUMNS` (`backend/vocabdb/importers.py:12-34`).
-- `backend/pyproject.toml`: pytest configuration only. `pythonpath = ["."]` makes the `vocabdb` package importable when pytest runs from `backend/` (`backend/pyproject.toml:1-2`).
+- `backend/pyproject.toml`: backend package metadata, runtime dependencies, optional test dependencies, package discovery, and pytest configuration. `pythonpath = ["."]` makes the `vocabdb` package importable when pytest runs from `backend/` (`backend/pyproject.toml:1-20`).
 
 ## frontend/
 
@@ -26,6 +27,7 @@ The CLI assumes it runs from `backend/`. Defaults reflect the relative position 
 
 - `export-json` default output: `../frontend/review/vocabulary.json` (`backend/vocabdb/cli.py:16`, `backend/vocabdb/cli.py:35`).
 - `serve-review` default directory: `../frontend/review` (`backend/vocabdb/cli.py:38`).
+- `serve-api` default DB path: `vocabulary.db`; default bind: `localhost:8001` (`backend/vocabdb/cli.py:15-17`, `backend/vocabdb/cli.py:43-47`).
 
 ## Monorepo Check
 
@@ -33,4 +35,4 @@ There is no `apps/` or `packages/` workspace manifest. The `backend/` and `front
 
 ## Generated Local Artifacts
 
-`backend/vocabulary.db` and `frontend/review/vocabulary.json` are generated local artifacts and are ignored by git (`.gitignore:17-30`). They may exist locally after running the CLI, but they are not source files.
+`backend/vocabulary.db`, `frontend/review/vocabulary.json`, and Python `*.egg-info/` metadata are generated local artifacts and are ignored by git (`.gitignore:5-30`). They may exist locally after running the CLI or editable installs, but they are not source files.
