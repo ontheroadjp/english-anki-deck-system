@@ -199,6 +199,33 @@ def test_api_lists_words_from_database(tmp_path):
     assert data["words"][0]["audio"]["word"][0]["ref"] == "[sound:word.mp3]"
 
 
+def test_api_lists_empty_database(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "metadata": {"word_count": 0},
+        "words": [],
+    }
+
+
+def test_api_lists_words_ordered_by_id(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "approved", headword="beta")
+    _insert_word(db_path, "approved", headword="alpha")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words")
+
+    assert response.status_code == 200
+    assert [word["headword"] for word in response.json()["words"]] == ["beta", "alpha"]
+
+
 def test_api_gets_word_by_id(tmp_path):
     db_path = tmp_path / "vocabulary.db"
     init_db(db_path)
@@ -214,6 +241,26 @@ def test_api_gets_word_by_id(tmp_path):
     assert data["wordbooks"][0]["wordbook_name"] == "testbook"
 
 
+def test_api_word_response_includes_nested_records(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "rejected", headword="inspect")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["meanings"] == [
+        {"id": 1, "ja": "意味", "usage_label": None, "priority": 1}
+    ]
+    assert data["examples"][0]["sentence"] == "This is a test."
+    assert data["examples"][0]["source"] == "imported"
+    assert data["examples"][0]["review_status"] == "rejected"
+    assert data["audio"]["word"][0]["asset_type"] == "word"
+    assert data["audio"]["examples"][0]["example_id"] == data["examples"][0]["id"]
+
+
 def test_api_returns_404_for_missing_word(tmp_path):
     db_path = tmp_path / "vocabulary.db"
     init_db(db_path)
@@ -225,6 +272,16 @@ def test_api_returns_404_for_missing_word(tmp_path):
     assert response.json() == {"detail": "Word not found"}
 
 
+def test_api_rejects_non_integer_word_id(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/not-an-id")
+
+    assert response.status_code == 422
+
+
 def test_api_allows_browser_fetch_from_static_frontend(tmp_path):
     db_path = tmp_path / "vocabulary.db"
     init_db(db_path)
@@ -234,6 +291,24 @@ def test_api_allows_browser_fetch_from_static_frontend(tmp_path):
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == "*"
+
+
+def test_api_allows_browser_preflight_for_get(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.options(
+        "/api/words",
+        headers={
+            "Origin": "http://localhost:8000",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "*"
+    assert "GET" in response.headers["access-control-allow-methods"]
 
 
 def test_review_ui_loads_words_from_api():
