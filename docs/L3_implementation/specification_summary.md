@@ -30,15 +30,15 @@ The SQLite schema is stored as a SQL string in `backend/vocabdb/db.py` and execu
 
 ## REST API
 
-`backend/vocabdb/api.py` defines `create_app(db_path)`, which returns a FastAPI application, enables browser GET access through CORS middleware, and stores the SQLite path on `app.state.db_path` (`backend/vocabdb/api.py:10-19`). The API surface is read-only and uses API-specific SQLite queries instead of calling the review JSON exporter (`backend/vocabdb/api.py:21-131`).
+`backend/vocabdb/api.py` defines `create_app(db_path)`, which returns a FastAPI application, enables browser GET access through CORS middleware, and stores the SQLite path on `app.state.db_path` (`backend/vocabdb/api.py:10-19`). The API surface is read-only and uses API-specific SQLite queries instead of calling the review JSON exporter (`backend/vocabdb/api.py:21-147`).
 
 Implemented endpoints:
 
 - `GET /api/health`: returns `{"status": "ok"}` (`backend/vocabdb/api.py:21-23`).
 - `GET /api/words`: returns `metadata.word_count` and a `words` array ordered by word id (`backend/vocabdb/api.py:25-38`).
-- `GET /api/words/{word_id}`: returns one word record or raises HTTP 404 with `detail = "Word not found"` when the id does not exist (`backend/vocabdb/api.py:40-52`).
+- `GET /api/words/{lookup}`: returns one word record by numeric word id or by case-insensitive headword, and raises HTTP 404 with `detail = "Word not found"` when no matching record exists (`backend/vocabdb/api.py:40-73`).
 
-Each word response includes the word fields plus nested `meanings`, `examples`, `wordbooks`, and `audio` data assembled from the normalized SQLite tables (`backend/vocabdb/api.py:56-131`). The `serve-api` CLI command imports Uvicorn and the FastAPI app factory at runtime, then runs the app with the configured host and port (`backend/vocabdb/cli.py:93-101`).
+Each word response includes the word fields plus nested `meanings`, `examples`, `wordbooks`, and `audio` data assembled from the normalized SQLite tables (`backend/vocabdb/api.py:78-147`). The `serve-api` CLI command imports Uvicorn and the FastAPI app factory at runtime, then runs the app with the configured host and port (`backend/vocabdb/cli.py:93-101`).
 
 ## Web Review UI
 

@@ -12,7 +12,7 @@
 ## backend/
 
 - `backend/vocabdb/`: Python package implementing the CLI, SQLite schema, import logic, validation, JSON export, and FastAPI REST API. The CLI imports and dispatches functions from `db`, `importers`, `validation`, and `exporters`, and imports the API app factory only when serving the API (`backend/vocabdb/cli.py:9-12`, `backend/vocabdb/cli.py:20-101`). The module entry point is `backend/vocabdb/__main__.py:1-3`.
-- `backend/vocabdb/api.py`: FastAPI app factory, browser CORS middleware, and API-specific SQLite serialization for `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/api.py:10-131`).
+- `backend/vocabdb/api.py`: FastAPI app factory, browser CORS middleware, and API-specific SQLite serialization for `/api/health`, `/api/words`, and `/api/words/{lookup}`. The lookup path accepts either a numeric word id or a headword (`backend/vocabdb/api.py:10-147`).
 - `backend/tests/`: pytest test suite. Tests import from the `vocabdb` package and use FastAPI's `TestClient` for API coverage (`backend/tests/test_vocabdb.py:5-11`, `backend/tests/test_vocabdb.py:170-244`).
 - `backend/anki_csv/`: current tracked Anki TSV source data. The importer expects the column order encoded by `ANKI_COLUMNS` (`backend/vocabdb/importers.py:12-34`).
 - `backend/pyproject.toml`: backend package metadata, runtime dependencies, optional test dependencies, package discovery, and pytest configuration. `pythonpath = ["."]` makes the `vocabdb` package importable when pytest runs from `backend/` (`backend/pyproject.toml:1-20`).

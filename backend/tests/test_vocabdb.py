@@ -241,6 +241,32 @@ def test_api_gets_word_by_id(tmp_path):
     assert data["wordbooks"][0]["wordbook_name"] == "testbook"
 
 
+def test_api_gets_word_by_headword(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "approved", headword="happy")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/happy")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == 1
+    assert data["headword"] == "happy"
+
+
+def test_api_gets_word_by_headword_case_insensitively(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "approved", headword="Happy")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/happy")
+
+    assert response.status_code == 200
+    assert response.json()["headword"] == "Happy"
+
+
 def test_api_word_response_includes_nested_records(tmp_path):
     db_path = tmp_path / "vocabulary.db"
     init_db(db_path)
@@ -272,14 +298,15 @@ def test_api_returns_404_for_missing_word(tmp_path):
     assert response.json() == {"detail": "Word not found"}
 
 
-def test_api_rejects_non_integer_word_id(tmp_path):
+def test_api_returns_404_for_missing_headword(tmp_path):
     db_path = tmp_path / "vocabulary.db"
     init_db(db_path)
     client = TestClient(create_app(db_path))
 
-    response = client.get("/api/words/not-an-id")
+    response = client.get("/api/words/not-a-word")
 
-    assert response.status_code == 422
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Word not found"}
 
 
 def test_api_allows_browser_fetch_from_static_frontend(tmp_path):
