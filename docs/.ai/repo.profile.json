@@ -1,0 +1,21 @@
+{
+  "repo_id": "english-anki-deck-system",
+  "package_manager": "unknown",
+  "doc_roots": [
+    "docs/L0_concept",
+    "docs/L1_project",
+    "docs/L2_development",
+    "docs/L3_implementation",
+    "docs/specification"
+  ],
+  "commands": {
+    "build_deck": {
+      "command": "python scripts/build_deck.py",
+      "evidence": "scripts/build_deck.py:1-28"
+    }
+  },
+  "primary_docs": {
+    "investigation": "docs/L3_implementation/specification_summary.md",
+    "structure": "docs/L1_project/repository_structure.md"
+  }
+}
