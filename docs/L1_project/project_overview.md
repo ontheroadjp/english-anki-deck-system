@@ -8,12 +8,12 @@ English Anki Deck Generator is a system for generating a university-entrance-exa
 
 - Language: Python is confirmed by the `.py` implementation file and Python syntax in `scripts/build_deck.py` (`scripts/build_deck.py:1-28`).
 - Libraries used by implementation: `pandas` and `yaml` are imported by the generator script (`scripts/build_deck.py:1-2`).
-- Data format: grammar taxonomy and templates are YAML (`data/grammar_patterns/grammar_taxonomy.yaml:1-18`, `data/templates/sample_template.yaml:1-24`).
+- Data format: grammar taxonomy and templates are YAML (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`, `data/templates/sample_template.yaml:1-24`).
 - Output format: CSV encoded as `utf-8-sig` (`scripts/build_deck.py:26-28`).
 
 ## Confirmed Features
 
-- Grammar taxonomy definition: categories and subpatterns are stored in `data/grammar_patterns/grammar_taxonomy.yaml` (`data/grammar_patterns/grammar_taxonomy.yaml:1-18`).
+- Grammar taxonomy definition: categories and subpatterns are stored in `data/grammar_patterns/grammar_taxonomy.yaml`; the current taxonomy contains 18 top-level categories and covers 378 subpatterns (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`).
 - Template-based sentence generation: the generator reads every `*.yaml` file in `data/templates` (`scripts/build_deck.py:5-9`).
 - Variable expansion: the current script expands the `noun` variable from template data (`scripts/build_deck.py:11-17`).
 - CSV export: generated cards are written to `generated.csv` (`scripts/build_deck.py:26-28`).
