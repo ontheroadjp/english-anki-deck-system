@@ -35,7 +35,7 @@
     },
     "deploy": {
       "command": "GitHub Actions main push deploy job",
-      "evidence": ".github/workflows/ci-cd.yml:84-129"
+      "evidence": ".github/workflows/ci-cd.yml:84-130"
     },
     "test": {
       "command": "cd backend && pytest",

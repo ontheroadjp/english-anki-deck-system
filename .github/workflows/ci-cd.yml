@@ -110,6 +110,7 @@ jobs:
           rsync -avz --delete \
             --exclude='.env' \
             --exclude='.venv/' \
+            --exclude='server/' \
             --exclude='backend/*.egg-info/' \
             -e "ssh -i ~/.ssh/deploy_key" \
             payload/ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
