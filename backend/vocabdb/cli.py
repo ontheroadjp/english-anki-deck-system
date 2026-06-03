@@ -14,6 +14,7 @@ from .validation import validate_db
 
 DEFAULT_DB = Path("vocabulary.db")
 DEFAULT_REVIEW_JSON = Path("../frontend/review/vocabulary.json")
+DEFAULT_API_PORT = 8001
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -38,6 +39,11 @@ def main(argv: list[str] | None = None) -> int:
     serve_parser.add_argument("--directory", default="../frontend/review")
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8000)
+
+    api_parser = subcommands.add_parser("serve-api", help="Serve the vocabulary REST API.")
+    api_parser.add_argument("--db", default=DEFAULT_DB)
+    api_parser.add_argument("--host", default="127.0.0.1")
+    api_parser.add_argument("--port", type=int, default=DEFAULT_API_PORT)
 
     args = parser.parse_args(argv)
 
@@ -73,6 +79,10 @@ def main(argv: list[str] | None = None) -> int:
         serve_review(args.directory, args.host, args.port)
         return 0
 
+    if args.command == "serve-api":
+        serve_api(args.db, args.host, args.port)
+        return 0
+
     parser.error("Unknown command")
     return 2
 
@@ -82,3 +92,12 @@ def serve_review(directory: str | Path, host: str, port: int) -> None:
     with socketserver.TCPServer((host, port), handler) as server:
         print(f"Serving review UI at http://{host}:{port}/")
         server.serve_forever()
+
+
+def serve_api(db_path: str | Path, host: str, port: int) -> None:
+    import uvicorn
+
+    from .api import create_app
+
+    app = create_app(db_path)
+    uvicorn.run(app, host=host, port=port)
