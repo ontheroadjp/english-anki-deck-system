@@ -104,6 +104,10 @@ main {
   gap: 14px;
 }
 
+.word-list[hidden] {
+  display: none;
+}
+
 .word-card {
   border: 1px solid #dce1e8;
   border-radius: 8px;
