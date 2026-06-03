@@ -66,7 +66,7 @@ GitHub Actions runs backend tests on pull requests and `main` pushes. The workfl
 
 On successful `main` pushes, the deploy job connects to the VPS with `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, creates `english/.venv` if absent and installs the backend package with `.venv/bin/pip install -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:37-64`).
 
-The repository provides server-side samples but does not install them automatically. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, while `server/systemd/dict-english.service` defines `DEPLOY_PATH`, reads `$DEPLOY_PATH/english/.env`, and runs `vocabdb serve-api` via `$DEPLOY_PATH/english/.venv/bin/python` from `$DEPLOY_PATH/english/backend`. `.env.example` is the commented template for the server-side `.env` file (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-16`, `.env.example:1-8`).
+The repository provides server-side sample templates but does not install them automatically. `server/nginx/dict-english.conf.example` is a location snippet that proxies `/dict/english/` to the local API process, while `server/systemd/dict-english.service.example` defines `DEPLOY_PATH`, reads `$DEPLOY_PATH/english/.env`, and runs `vocabdb serve-api` via `$DEPLOY_PATH/english/.venv/bin/python` from `$DEPLOY_PATH/english/backend`. Copy each `.example` to the live filename on the host (the live versions are gitignored as host-specific). `.env.example` is the commented template for the server-side `.env` file (`server/nginx/dict-english.conf.example:1-29`, `server/systemd/dict-english.service.example:1-32`, `.env.example:1-8`).
 
 ## Generated Files
 
