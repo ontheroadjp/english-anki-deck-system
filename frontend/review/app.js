@@ -28,10 +28,13 @@ const status = document.querySelector("#status");
 const tabCards = document.querySelector("#tab-cards");
 const tabTable = document.querySelector("#tab-table");
 
-fetch("vocabulary.json")
+const apiBaseUrl = new URLSearchParams(window.location.search).get("api") || "http://localhost:8001";
+const wordsUrl = new URL("/api/words", apiBaseUrl);
+
+fetch(wordsUrl)
   .then((response) => {
     if (!response.ok) {
-      throw new Error(`Failed to load vocabulary.json: ${response.status}`);
+      throw new Error(`Failed to load vocabulary API: ${response.status}`);
     }
     return response.json();
   })
@@ -42,7 +45,7 @@ fetch("vocabulary.json")
   })
   .catch((error) => {
     summary.textContent = error.message;
-    const message = '<p class="empty">Run export-json before opening this page.</p>';
+    const message = '<p class="empty">Start serve-api before opening this page.</p>';
     list.innerHTML = message;
     table.innerHTML = message;
   });

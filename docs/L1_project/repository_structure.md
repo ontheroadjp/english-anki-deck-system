@@ -12,14 +12,14 @@
 ## backend/
 
 - `backend/vocabdb/`: Python package implementing the CLI, SQLite schema, import logic, validation, JSON export, and FastAPI REST API. The CLI imports and dispatches functions from `db`, `importers`, `validation`, and `exporters`, and imports the API app factory only when serving the API (`backend/vocabdb/cli.py:9-12`, `backend/vocabdb/cli.py:20-101`). The module entry point is `backend/vocabdb/__main__.py:1-3`.
-- `backend/vocabdb/api.py`: FastAPI app factory and API-specific SQLite serialization for `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/api.py:10-124`).
-- `backend/tests/`: pytest test suite. Tests import from the `vocabdb` package and use FastAPI's `TestClient` for API coverage (`backend/tests/test_vocabdb.py:5-10`, `backend/tests/test_vocabdb.py:170-224`).
+- `backend/vocabdb/api.py`: FastAPI app factory, browser CORS middleware, and API-specific SQLite serialization for `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/api.py:10-131`).
+- `backend/tests/`: pytest test suite. Tests import from the `vocabdb` package and use FastAPI's `TestClient` for API coverage (`backend/tests/test_vocabdb.py:5-11`, `backend/tests/test_vocabdb.py:170-244`).
 - `backend/anki_csv/`: current tracked Anki TSV source data. The importer expects the column order encoded by `ANKI_COLUMNS` (`backend/vocabdb/importers.py:12-34`).
 - `backend/pyproject.toml`: backend package metadata, runtime dependencies, optional test dependencies, package discovery, and pytest configuration. `pythonpath = ["."]` makes the `vocabdb` package importable when pytest runs from `backend/` (`backend/pyproject.toml:1-20`).
 
 ## frontend/
 
-- `frontend/review/`: static review UI. `index.html` declares the search box, status filter, Cards/Table tab strip, and two sibling view sections; `app.js` fetches `vocabulary.json` and dispatches rendering by active view (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-89`).
+- `frontend/review/`: static review UI. `index.html` declares the search box, status filter, Cards/Table tab strip, and two sibling view sections; `app.js` fetches `/api/words` from the configured API base and dispatches rendering by active view (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-92`).
 
 ## Default Paths Across Layers
 
@@ -27,7 +27,7 @@ The CLI assumes it runs from `backend/`. Defaults reflect the relative position 
 
 - `export-json` default output: `../frontend/review/vocabulary.json` (`backend/vocabdb/cli.py:16`, `backend/vocabdb/cli.py:35`).
 - `serve-review` default directory: `../frontend/review` (`backend/vocabdb/cli.py:38`).
-- `serve-api` default DB path: `vocabulary.db`; default bind: `localhost:8001` (`backend/vocabdb/cli.py:15-17`, `backend/vocabdb/cli.py:43-47`).
+- `serve-api` default DB path: `vocabulary.db`; default bind: `localhost:8001`. The static review UI defaults to that API base and can be pointed elsewhere with the `api` query parameter (`backend/vocabdb/cli.py:15-17`, `backend/vocabdb/cli.py:43-47`, `frontend/review/app.js:31-32`).
 
 ## Monorepo Check
 
