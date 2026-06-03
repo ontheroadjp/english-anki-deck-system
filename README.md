@@ -76,7 +76,7 @@ cd backend && pytest
 
 GitHub Actions runs the same backend pytest suite on pull requests and `main` pushes. On successful `main` pushes, the deploy job SSHes to the VPS using `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, updates the repository with `git pull --ff-only`, installs the backend package with `python3 -m pip install --user -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:1-64`).
 
-Server configuration samples for the backend API live under `server/`. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, and `server/systemd/dict-english.service` runs the API through `python3 -m vocabdb serve-api` after loading environment values from `$HOME/.config/dict-english/dict-english.env` (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-15`, `server/systemd/dict-english.env.example:1-4`).
+Server configuration samples for the backend API live under `server/`. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, and `server/systemd/dict-english.service` runs the API through `python3 -m vocabdb serve-api` after loading environment values from `$DEPLOY_PATH/.env.dict-english` (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-16`, `server/systemd/dict-english.env.example:1-3`).
 
 ## Design Principles
 
