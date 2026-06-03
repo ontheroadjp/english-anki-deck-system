@@ -29,6 +29,8 @@ The output file path is `generated.csv`, and the encoding is `utf-8-sig` (`scrip
 
 The intended card schema is broader than the implemented output. The specification lists fields from `id` through `source_template` (`docs/specification/L2_card_schema.md:3-19`), but the implementation currently writes only five fields (`scripts/build_deck.py:18-24`).
 
+The grammar taxonomy source data is stored separately from the current generator flow. `data/grammar_patterns/grammar_taxonomy.yaml` now contains 18 top-level categories and 378 subpatterns (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`), but `scripts/build_deck.py` currently reads only `data/templates/*.yaml` and does not load the taxonomy file (`scripts/build_deck.py:5-9`).
+
 ## Pipeline Coverage
 
 The specified pipeline is taxonomy definition, template creation, sentence generation, validator, dedupe, and CSV export (`docs/specification/L3_generation_pipeline.md:3-8`). The current implementation covers template reading, sentence generation, and CSV export (`scripts/build_deck.py:5-28`). Validator and dedupe are not implemented in the observed repository files.
