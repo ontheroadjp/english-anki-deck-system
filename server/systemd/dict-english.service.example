@@ -1,0 +1,32 @@
+# Sample systemd unit for the Dict English backend API.
+#
+# Copy this file to /etc/systemd/system/dict-english.service (or symlink it
+# from the deployed location) and replace the placeholders below with values
+# appropriate for the host:
+#
+#   - User / Group : OS user that owns the deploy directory and runs the API.
+#                    The user must exist and own $DEPLOY_PATH and its contents.
+#   - DEPLOY_PATH  : absolute path on the host where the deployment lives.
+#                    Expected to contain english/.env, english/.venv/,
+#                    english/backend/, and english/vocabulary.db.
+#
+# The ExecStart loads $DEPLOY_PATH/english/.env (which defines DICT_ENGLISH_DB,
+# DICT_ENGLISH_HOST, DICT_ENGLISH_PORT) and runs vocabdb serve-api via the
+# project-local virtual environment.
+
+[Unit]
+Description=Dict English backend API
+After=network.target
+
+[Service]
+Type=simple
+User=REPLACE_WITH_DEPLOY_USER
+Group=REPLACE_WITH_DEPLOY_USER
+Environment=DEPLOY_PATH=REPLACE_WITH_ABSOLUTE_DEPLOY_PATH
+Environment=PYTHONUNBUFFERED=1
+ExecStart=sh -lc 'set -a; . "$DEPLOY_PATH/english/.env"; set +a; cd "$DEPLOY_PATH/english/backend" && exec "$DEPLOY_PATH/english/.venv/bin/python" -m vocabdb serve-api --db "$DICT_ENGLISH_DB" --host "$DICT_ENGLISH_HOST" --port "$DICT_ENGLISH_PORT"'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

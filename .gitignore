@@ -32,3 +32,7 @@ venv/
 # Generated review/export artifacts
 frontend/review/vocabulary.json
 generated.csv
+
+# Server-side configs (host-specific; commit only the .example templates)
+server/systemd/dict-english.service
+server/nginx/dict-english.conf
