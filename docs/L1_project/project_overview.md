@@ -29,7 +29,7 @@ This repository implements a SQLite-backed English vocabulary database, local re
 - JSON review export returns `metadata.schema = vocabdb.review.v1`, word count, and nested word records with meanings, examples, wordbooks, and audio refs (`backend/vocabdb/exporters.py:10-45`).
 - The FastAPI REST API returns health status, a word list, and individual word records from API-specific SQLite queries, and allows browser GET access for the static review UI (`backend/vocabdb/api.py:10-131`).
 - The web review UI loads words from `/api/words`, supports text search, filters by example review status, and renders the data either as word cards or as a per-example table selectable via a tab strip (`frontend/review/index.html:27-35`, `frontend/review/app.js:31-141`).
-- CI/CD runs backend tests and deploys the backend API service named `dict-english` to a VPS using GitHub Secrets and SSH (`.github/workflows/ci-cd.yml:1-64`, `server/systemd/dict-english.service:1-15`).
+- CI/CD runs backend tests and deploys the backend API service named `dict-english` to a VPS using GitHub Secrets and SSH (`.github/workflows/ci-cd.yml:1-64`, `server/systemd/dict-english.service.example:1-32`).
 
 ## Commands
 

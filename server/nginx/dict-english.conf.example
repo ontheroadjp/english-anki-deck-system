@@ -1,0 +1,29 @@
+# Sample nginx snippet for proxying /dict/english/ to the local backend API.
+#
+# This file is intended to be included from a parent server { ... } block that
+# owns TLS termination and server_name. Place this snippet under a path such
+# as /etc/nginx/conf.d/<your host>/dict/english/dict-english.conf and include
+# it from the host's sites-available config, for example:
+#
+#     server {
+#         server_name <your host>;
+#         listen 443 ssl;
+#         # ... TLS config ...
+#         include /etc/nginx/conf.d/<your host>/dict/english/*.conf;
+#     }
+#
+# The backend (vocabdb serve-api) listens on http://localhost:8001 by default.
+# Adjust the proxy_pass port if DICT_ENGLISH_PORT in .env differs.
+
+location = /dict/english {
+    return 301 /dict/english/;
+}
+
+location /dict/english/ {
+    proxy_pass http://localhost:8001/;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
