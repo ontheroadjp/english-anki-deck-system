@@ -1,42 +1,41 @@
 # Specification Summary
 
-## Implemented Generator
+## CLI
 
-`scripts/build_deck.py` is the only confirmed executable implementation. It imports `pandas`, `yaml`, and `Path` (`scripts/build_deck.py:1-3`), reads all YAML templates under `data/templates` (`scripts/build_deck.py:5-9`), expands template sentences with each configured noun (`scripts/build_deck.py:11-17`), appends card dictionaries (`scripts/build_deck.py:18-24`), and exports them to `generated.csv` (`scripts/build_deck.py:26-28`).
+The implemented CLI is available through `python -m vocabdb` because `vocabdb/__main__.py` imports `main` and exits with its return code (`vocabdb/__main__.py:1-3`). `vocabdb/cli.py` defines five subcommands: `init-db`, `import-anki`, `validate`, `export-json`, and `serve-review` (`vocabdb/cli.py:19-40`).
 
-## Template Contract
+## Database Layer
 
-The current implementation expects these fields:
+The SQLite schema is stored as a SQL string in `vocabdb/db.py` and executed by `init_db` (`vocabdb/db.py:7-87`, `vocabdb/db.py:97-102`). The connection helper enables foreign keys and returns rows as `sqlite3.Row` objects (`vocabdb/db.py:90-94`). This matters because import, validation, and export code all access columns by name.
 
-- `correct`: sentence template formatted with `{noun}` (`scripts/build_deck.py:12`, `data/templates/sample_template.yaml:3-4`).
-- `incorrect_patterns`: list of mappings whose values are incorrect sentence templates (`scripts/build_deck.py:14-17`, `data/templates/sample_template.yaml:6-11`).
-- `variables.noun`: list of nouns used for expansion (`scripts/build_deck.py:11`, `data/templates/sample_template.yaml:13-17`).
-- `metadata.grammar_unit`, `metadata.difficulty`, and `metadata.eiken`: values copied into each generated card (`scripts/build_deck.py:21-23`, `data/templates/sample_template.yaml:19-24`).
+## Import Logic
 
-## Output Contract
+`import_anki_tsv` initializes the DB, skips Anki metadata header lines beginning with `#`, parses rows with `csv.DictReader(..., delimiter="\t")`, and inserts one normalized vocabulary record per non-empty headword row (`vocabdb/importers.py:43-61`). Each row inserts:
 
-The current CSV output contains these columns because those are the keys appended to each card:
+- a word with headword, lemma, pronunciation, part of speech, and exam level (`vocabdb/importers.py:64-78`)
+- a meaning (`vocabdb/importers.py:80-86`)
+- an approved imported example (`vocabdb/importers.py:88-110`)
+- source wordbook metadata (`vocabdb/importers.py:112-139`)
+- word and example audio refs (`vocabdb/importers.py:141-158`)
 
-- `incorrect_sentence` (`scripts/build_deck.py:18-20`)
-- `correct_sentence` (`scripts/build_deck.py:18-20`)
-- `grammar_unit` (`scripts/build_deck.py:21`)
-- `difficulty` (`scripts/build_deck.py:22`)
-- `eiken` (`scripts/build_deck.py:23`)
+## Validation Logic
 
-The output file path is `generated.csv`, and the encoding is `utf-8-sig` (`scripts/build_deck.py:26-28`).
+`validate_db` returns `ValidationIssue` records for duplicate normalized headwords, missing pronunciation, missing example translation, missing word audio, and missing example audio (`vocabdb/validation.py:9-17`, `vocabdb/validation.py:20-106`). The CLI prints those issues and returns a non-zero exit status when any issue exists (`vocabdb/cli.py:54-65`).
 
-## Data Model
+## JSON Export
 
-The intended card schema is broader than the implemented output. The specification lists fields from `id` through `source_template` (`docs/specification/L2_card_schema.md:3-19`), but the implementation currently writes only five fields (`scripts/build_deck.py:18-24`).
+`build_review_payload` queries words and adds nested `meanings`, `examples`, `wordbooks`, and `audio` arrays for each word (`vocabdb/exporters.py:10-45`, `vocabdb/exporters.py:59-113`). `export_review_json` writes that payload as UTF-8 JSON (`vocabdb/exporters.py:48-56`). The payload schema name is `vocabdb.review.v1` (`vocabdb/exporters.py:39-45`).
 
-The grammar taxonomy source data is stored separately from the current generator flow. `data/grammar_patterns/grammar_taxonomy.yaml` now contains 18 top-level categories and 378 subpatterns (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`), but `scripts/build_deck.py` currently reads only `data/templates/*.yaml` and does not load the taxonomy file (`scripts/build_deck.py:5-9`).
+## Web Review UI
 
-## Pipeline Coverage
+The static UI declares a search box and review-status filter in HTML (`web/review/index.html:11-31`). JavaScript fetches `vocabulary.json`, stores words in memory, filters by text and review status, and renders word cards with meanings, examples, wordbook labels, and word audio refs (`web/review/app.js:12-68`, `web/review/app.js:71-141`). CSS provides a responsive layout that stacks header and card controls under `760px` (`web/review/styles.css:183-202`).
 
-The specified pipeline is taxonomy definition, template creation, sentence generation, validator, dedupe, and CSV export (`docs/specification/L3_generation_pipeline.md:3-8`). The current implementation covers template reading, sentence generation, and CSV export (`scripts/build_deck.py:5-28`). Validator and dedupe are not implemented in the observed repository files.
+## Generated Artifacts
+
+`vocabulary.db` and `web/review/vocabulary.json` are generated local artifacts and are excluded from git (`.gitignore:17-30`).
 
 ## Unconfirmed
 
-- API endpoints are unconfirmed because no server, routing, or API files exist.
-- Database behavior is unconfirmed because no schema, migration, or database access code exists.
-- Validation and deduplication behavior is unconfirmed because no implementation files for those phases exist.
+- No API endpoints are implemented.
+- No production deployment mechanism is implemented.
+- No migration versioning system is implemented beyond the idempotent schema string in `vocabdb/db.py`.

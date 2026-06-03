@@ -1,14 +1,15 @@
 # CLAUDE.md
 
-このファイルは AI 運用の起点となる情報をまとめる。このリポジトリで作業する際は、まず `AGENTS.md` と `README.md` を読み、次に `docs/specification/` と `docs/L0_concept/` を確認する。
+このファイルは AI 運用の起点となる情報をまとめる。このリポジトリで作業する際は、まず `AGENTS.md` と `README.md` を読み、次に `docs/L0_concept/` と `docs/L1_project/`、必要に応じて `docs/L3_implementation/` を確認する。
 
 ## このリポジトリについて
 
-このリポジトリは、大学受験向け英語誤文訂正 Anki デッキを生成するためのシステムである。目的は英文法暗記ではなく、誤文検知能力を高めることにある。
+このリポジトリは、大学受験向け英単語データを SQLite に保存し、レビュー用 JSON とブラウザ表示を生成する語彙 DB システムである。現在の実装は `python -m vocabdb` を入口に、DB 初期化、Anki TSV import、validation、JSON export、local review UI serving を行う。
 
 作業開始時に `README.md` の以下のセクションを読むこと:
 
 - `## Features`
+- `## Installation`
 - `## Usage`
 - `## Design Principles`
 - `## Architecture`
@@ -22,17 +23,25 @@
 
 ## 重要な設計原則
 
-- カードはテンプレートから生成する。`docs/specification/L3_generation_pipeline.md` は直接カード生成を禁止している。
-- Taxonomy / template / schema を SSOT として扱い、実装変更時は `docs/specification/` と `docs/L*_*/` の整合性を確認する。
-- 現在の実装は `scripts/build_deck.py` が `data/templates/*.yaml` を読み、`generated.csv` を出力する構成である。
-- 依存関係ファイルがないため、Python バージョンや依存ライブラリのバージョンは断定しない。
+- SQLite を語彙データの source of truth として扱う。生成された `vocabulary.db` は git 管理しない。
+- v1 の出力は review JSON と静的 Web review UI である。Anki CSV export は現在の実装には存在しない。
+- `web/review/vocabulary.json` は生成物であり、DB から再生成する。
+- Anki の `[sound:...]` は URL として扱わず、audio ref として保存する。
+- 例文レビュー状態は `draft` / `approved` / `rejected` に揃える。
 
 ## 実行コマンド
 
-現時点で確認できる実行コマンド:
-
 ```bash
-python scripts/build_deck.py
+python -m vocabdb init-db --db vocabulary.db
+python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
+python -m vocabdb validate --db vocabulary.db
+python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+python -m vocabdb serve-review
+pytest
 ```
 
-このコマンドは `generated.csv` を生成する。テストコマンド、CI、依存関係インストールコマンドは未定義。
+## 未確認事項
+
+- CI は未定義。
+- 本番デプロイ先は未定義。
+- 依存関係のlock fileは未定義。

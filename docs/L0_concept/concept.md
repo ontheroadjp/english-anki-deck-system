@@ -1,24 +1,22 @@
 # Concept
 
-## Purpose
+## Product Purpose
 
-This repository exists to generate an Anki deck for English error-correction practice aimed at university entrance exam preparation. The stated goal is not memorizing English grammar itself, but improving the ability to detect incorrect English sentences (`docs/specification/L0_philosophy.md:1-6`).
+This repository manages an English vocabulary database for university entrance exam learners. The current implemented workflow stores vocabulary data in SQLite, imports Anki TSV source data, validates the stored data, exports review JSON, and displays that JSON in a local browser review UI (`vocabdb/db.py:7-102`, `vocabdb/importers.py:43-61`, `vocabdb/validation.py:17-106`, `vocabdb/exporters.py:10-56`, `web/review/index.html:11-31`).
 
-## Problem
+## Target Users
 
-The source specification says frequently tested university-entrance-exam error patterns should be systematized and delivered as a repeatable Anki deck (`docs/specification/L0_philosophy.md:3-6`). The repository therefore treats grammar errors as structured source data rather than isolated hand-written cards.
+The implemented data source is an Anki export for an English wordbook deck, and the importer maps fields such as headword, pronunciation, Japanese meaning, example sentence, example translation, wordbook metadata, and audio references into the database (`anki_csv/target_1900_6th.txt:1-7`, `vocabdb/importers.py:12-34`, `vocabdb/importers.py:64-142`). The practical target user is therefore a maintainer reviewing exam-oriented vocabulary entries before downstream export or study use.
 
-## Target User
+## Problem Solved
 
-The confirmed target is learners preparing for university entrance exams who need repeated exposure to English error patterns (`docs/specification/L0_philosophy.md:5-6`, `README.md:1-5`).
+The project provides a structured review pipeline instead of treating cards as a flat CSV. The schema separates words, meanings, examples, wordbook entries, audio assets, and generation review records (`vocabdb/db.py:10-86`). This separation exists so import, validation, JSON export, and visual review can operate on normalized data rather than a single denormalized note row.
 
-## Design Constraints
+## Current Output Priority
 
-- Cards must be generated from templates, not written directly (`docs/specification/L3_generation_pipeline.md:10-14`).
-- The generation flow starts from taxonomy and templates, then proceeds to sentence generation, validation, deduplication, and CSV export (`docs/specification/L3_generation_pipeline.md:3-8`).
-- The current implementation exports CSV because `scripts/build_deck.py` writes `generated.csv` with `pandas.DataFrame.to_csv` (`scripts/build_deck.py:26-28`).
+The current output surface is review JSON plus a static web UI. The CLI exports `web/review/vocabulary.json` by default (`vocabdb/cli.py:15-16`, `vocabdb/cli.py:33-35`), and the web app fetches `vocabulary.json` and renders word cards with search and review-status filtering (`web/review/app.js:12-27`, `web/review/app.js:39-68`).
 
 ## Unconfirmed
 
-- The repository does not currently contain requirements, lock files, or runtime version declarations, so the supported Python version and exact dependency versions are unconfirmed. Add a `requirements.txt`, `pyproject.toml`, or lock file to make this determinable.
-- No Anki import configuration is present, so the exact target note type, deck name, and field mapping are unconfirmed. Add an Anki export/import specification or implementation file to make this determinable.
+- A production deployment target is unconfirmed because no CI, hosting configuration, or deployment files exist in the repository.
+- A public license for the imported Anki TSV content is unconfirmed because no license file or source-rights metadata is present.
