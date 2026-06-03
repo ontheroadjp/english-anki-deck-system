@@ -2,7 +2,7 @@
 
 大学受験向け英単語データを SQLite に保存し、レビュー用 JSON、ブラウザ表示、REST API を生成する語彙 DB システム。
 
-このリポジトリは `backend/` と `frontend/` の二層構成で管理する。`backend/` は SQLite スキーマ、Anki TSV import、validation、JSON export、local review UI serving、REST API serving を担当する Python 実装と、その pytest テストおよびソース TSV を含む。`frontend/` は静的レビュー UI を含む。`docs/` と `README.md` などのドキュメント類はルートに置く。
+このリポジトリは `backend/` と `frontend/` の二層構成で管理する。`backend/` は SQLite スキーマ、Anki TSV import、validation、JSON export、local review UI serving、REST API serving を担当する Python 実装と、その pytest テストおよびソース TSV を含む。`frontend/` は静的レビュー UI を含む。`docs/` と `README.md` などのドキュメント類はルートに置き、GitHub Actions workflow とサーバー設定サンプルはそれぞれ `.github/workflows/` と `server/` に置く。
 
 ## Features
 
@@ -12,6 +12,7 @@
 - Review JSON export with `vocabdb.review.v1` metadata and nested word data (`backend/vocabdb/exporters.py:10-56`).
 - FastAPI REST API with `/api/health`, `/api/words`, and `/api/words/{lookup}` endpoints backed by API-specific SQLite queries (`backend/vocabdb/api.py:10-147`).
 - Static browser review UI that loads words from the REST API, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-141`).
+- GitHub Actions CI/CD that runs backend pytest on pull requests and `main` pushes, then deploys the backend API to a VPS over SSH on successful `main` pushes (`.github/workflows/ci-cd.yml:1-64`).
 
 ## Installation
 
@@ -73,6 +74,10 @@ Run tests:
 cd backend && pytest
 ```
 
+GitHub Actions runs the same backend pytest suite on pull requests and `main` pushes. On successful `main` pushes, the deploy job SSHes to the VPS using `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, updates the repository with `git pull --ff-only`, installs the backend package with `python3 -m pip install --user -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:1-64`).
+
+Server configuration samples for the backend API live under `server/`. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, and `server/systemd/dict-english.service` runs the API through `python3 -m vocabdb serve-api` after loading environment values from `$DEPLOY_PATH/.env`. Use `.env.example` as the template for that server-side `.env` file (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-16`, `.env.example:1-9`).
+
 ## Design Principles
 
 - SQLite is the source of truth for normalized vocabulary data. The schema keeps words, meanings, examples, source wordbook metadata, audio refs, and generation review status separate so review and export logic can query them consistently (`backend/vocabdb/db.py:10-87`).
@@ -91,4 +96,7 @@ cd backend && pytest
    - CLI entrypoint: `python -m vocabdb` dispatches `init-db`, `import-anki`, `validate`, `export-json`, `serve-review`, and `serve-api` (`backend/vocabdb/__main__.py:1-3`, `backend/vocabdb/cli.py:20-86`).
 2. Frontend (`frontend/`):
    - `frontend/review/` renders REST API word data in the browser (`frontend/review/index.html:1-39`, `frontend/review/app.js:31-141`).
-3. Tests: `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-296`).
+3. CI/CD and server config:
+   - `.github/workflows/ci-cd.yml` runs backend tests and deploys the backend API on successful `main` pushes (`.github/workflows/ci-cd.yml:1-64`).
+   - `server/nginx/` and `server/systemd/` contain manually applied VPS configuration samples for the `dict-english` API service (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-15`).
+4. Tests: `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-296`).

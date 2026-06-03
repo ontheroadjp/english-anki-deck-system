@@ -10,6 +10,8 @@ Run:
 cd backend && pytest
 ```
 
+GitHub Actions runs the same pytest command from `backend/` on pull requests and `main` pushes after installing the backend with test dependencies (`.github/workflows/ci-cd.yml:1-35`).
+
 ## Covered Behavior
 
 - Schema creation: `test_init_db_creates_schema` verifies core SQLite tables (`backend/tests/test_vocabdb.py:11-30`).
@@ -22,4 +24,3 @@ cd backend && pytest
 ## Unconfirmed
 
 - Coverage thresholds are unconfirmed because no coverage configuration exists.
-- CI test execution is unconfirmed because no CI workflow exists.
