@@ -1,28 +1,23 @@
-import pandas as pd
-import yaml
-from pathlib import Path
+from __future__ import annotations
 
-templates = Path("data/templates").glob("*.yaml")
-cards = []
+import sys
 
-for t in templates:
-    data = yaml.safe_load(open(t, encoding="utf-8"))
 
-    for noun in data.get("variables", {}).get("noun", []):
-        correct = data["correct"].format(noun=noun)
+MESSAGE = """The old grammar deck generator has been replaced.
 
-        for p in data["incorrect_patterns"]:
-            for k, v in p.items():
-                incorrect = v.format(noun=noun)
+Use the vocabulary database CLI instead:
 
-                cards.append({
-                    "incorrect_sentence": incorrect,
-                    "correct_sentence": correct,
-                    "grammar_unit": data["metadata"]["grammar_unit"],
-                    "difficulty": data["metadata"]["difficulty"],
-                    "eiken": data["metadata"]["eiken"],
-                })
+  python -m vocabdb init-db --db vocabulary.db
+  python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
+  python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+  python -m vocabdb serve-review
+"""
 
-df = pd.DataFrame(cards)
-df.to_csv("generated.csv", index=False, encoding="utf-8-sig")
-print("generated.csv created")
+
+def main() -> int:
+    print(MESSAGE, file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,11 @@
+
+interested:
+  correct: in
+  incorrect:
+    - at
+    - on
+depend:
+  correct: on
+  incorrect:
+    - of
+    - to
