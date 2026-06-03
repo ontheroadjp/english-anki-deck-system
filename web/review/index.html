@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vocabulary Review</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Vocabulary Review</h1>
+        <p id="summary">Loading vocabulary.json</p>
+      </div>
+      <div class="filters">
+        <input id="search" type="search" placeholder="Search words, meanings, examples">
+        <select id="status">
+          <option value="">All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </header>
+
+    <main>
+      <section id="word-list" class="word-list" aria-live="polite"></section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

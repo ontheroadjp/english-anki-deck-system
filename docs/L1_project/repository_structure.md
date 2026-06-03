@@ -2,21 +2,23 @@
 
 ## Top-Level Structure
 
-- `AGENTS.md`: AI entry-point guidance and role definitions. It instructs agents to read the four specification files first and lists architect, generator, validator, and exporter roles (`AGENTS.md:3-24`).
-- `README.md`: project summary and generation flow (`README.md:1-14`).
-- `data/`: structured source data used by the generator. The taxonomy YAML contains 18 top-level grammar categories and 378 subpatterns (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`), and the template YAML contains a sample sentence template with variables and metadata (`data/templates/sample_template.yaml:1-24`).
-- `docs/specification/`: existing product and implementation specifications. These define the goal, taxonomy, card schema, and generation pipeline (`docs/specification/L0_philosophy.md:1-6`, `docs/specification/L1_taxonomy.md:1-22`, `docs/specification/L2_card_schema.md:1-19`, `docs/specification/L3_generation_pipeline.md:1-14`).
-- `scripts/`: executable generator implementation. `scripts/build_deck.py` reads template YAML files and writes `generated.csv` (`scripts/build_deck.py:5-28`).
+- `vocabdb/`: Python package for the CLI, SQLite schema, import logic, validation, and JSON export. The CLI imports and dispatches functions from `db`, `importers`, `validation`, and `exporters` (`vocabdb/cli.py:9-12`, `vocabdb/cli.py:19-77`).
+- `web/review/`: static browser review UI. `index.html` loads `styles.css` and `app.js`, and `app.js` fetches generated `vocabulary.json` (`web/review/index.html:7-31`, `web/review/app.js:12-27`).
+- `tests/`: pytest test suite for schema creation, import, JSON export, validation, and review status handling (`tests/test_vocabdb.py:12-166`).
+- `anki_csv/`: current tracked Anki TSV source data. The importer is designed for the column order represented by `ANKI_COLUMNS` (`anki_csv/target_1900_6th.txt:1-7`, `vocabdb/importers.py:12-34`).
+- `docs/`: repository documentation and AI repo profile. The profile lists documentation roots and primary docs for investigation/structure (`docs/.ai/repo.profile.json:4-10`, `docs/.ai/repo.profile.json:37-40`).
+- `README.md`: user-facing feature, command, and architecture summary.
+- `CLAUDE.md`: AI operation entrypoint for this repository.
+- `pyproject.toml`: pytest configuration only (`pyproject.toml:1-2`).
 
-## Data Directories
+## Removed Legacy Structure
 
-- `data/grammar_patterns/` currently stores `grammar_taxonomy.yaml`, whose root key is `grammar_taxonomy` (`data/grammar_patterns/grammar_taxonomy.yaml:1`). Its current top-level categories run from `verb` through `special_construction` (`data/grammar_patterns/grammar_taxonomy.yaml:2-495`).
-- `data/templates/` currently stores `sample_template.yaml`, which defines `template_id`, `correct`, `incorrect_patterns`, `variables`, and `metadata` (`data/templates/sample_template.yaml:1-24`).
+The previous grammar taxonomy/template directories and the old `scripts/build_deck.py` entrypoint are no longer present in the current working tree. The current source file list contains no `data/` or `scripts/` directory, while the implemented entrypoint is `vocabdb/__main__.py` (`vocabdb/__main__.py:1-3`).
 
 ## Monorepo Check
 
-No `apps/`, `packages/`, or package manifests are present in the observed file list. There is no confirmed monorepo structure.
+No `apps/`, `packages/`, or workspace manifest exists in the observed repository file list. No package manager workspace is confirmed.
 
-## Unconfirmed
+## Generated Local Artifacts
 
-- Test, CI, packaging, and dependency-management responsibilities are unconfirmed because no corresponding files exist in the current repository.
+`vocabulary.db` and `web/review/vocabulary.json` are generated local artifacts and are ignored by git (`.gitignore:17-30`). They may exist locally after running the CLI, but they are not source files.
