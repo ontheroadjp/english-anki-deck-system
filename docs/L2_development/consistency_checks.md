@@ -7,8 +7,8 @@
 
 ## Export And UI Consistency
 
-- The web UI expects a generated `vocabulary.json` file in the served directory (`web/review/app.js:12-27`).
-- The exporter provides `metadata.schema`, `metadata.word_count`, and `words` (`vocabdb/exporters.py:39-45`), which the UI uses to display the loaded count and render word cards (`web/review/app.js:19-22`, `web/review/app.js:71-99`).
+- The web UI expects a generated `vocabulary.json` file in the served directory (`web/review/app.js:31-48`).
+- The exporter provides `metadata.schema`, `metadata.word_count`, and `words` (`vocabdb/exporters.py:39-45`), which the UI uses to display the loaded count and to render either word cards or a per-example table (`web/review/app.js:38-41`, `web/review/app.js:91-138`, `web/review/app.js:164-208`).
 - Review statuses shown by the UI should stay aligned with SQLite CHECK constraints: `draft`, `approved`, and `rejected` (`vocabdb/db.py:41-43`, `web/review/index.html:18-23`).
 
 ## Validation Checks
