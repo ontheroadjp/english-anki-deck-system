@@ -2,28 +2,35 @@
 
 ## Purpose
 
-English Anki Deck Generator is a system for generating a university-entrance-exam English error-correction Anki deck (`README.md:1-5`). Its documented learning objective is improving incorrect-sentence detection rather than memorizing grammar descriptions (`docs/specification/L0_philosophy.md:1-6`).
+This repository implements a SQLite-backed English vocabulary database and local review workflow. The implemented CLI can initialize a database, import Anki TSV data, validate records, export review JSON, and serve a static browser review UI (`vocabdb/cli.py:19-77`).
 
-## Confirmed Technology Stack
+## Technology Stack
 
-- Language: Python is confirmed by the `.py` implementation file and Python syntax in `scripts/build_deck.py` (`scripts/build_deck.py:1-28`).
-- Libraries used by implementation: `pandas` and `yaml` are imported by the generator script (`scripts/build_deck.py:1-2`).
-- Data format: grammar taxonomy and templates are YAML (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`, `data/templates/sample_template.yaml:1-24`).
-- Output format: CSV encoded as `utf-8-sig` (`scripts/build_deck.py:26-28`).
+- Language: Python, confirmed by the `vocabdb/*.py` package and `tests/test_vocabdb.py` (`vocabdb/cli.py:1-84`, `tests/test_vocabdb.py:1-166`).
+- Database: SQLite through Python's `sqlite3` module (`vocabdb/db.py:3-4`, `vocabdb/db.py:90-102`).
+- Frontend: static HTML, CSS, and JavaScript under `web/review/` (`web/review/index.html:1-33`, `web/review/app.js:1-141`, `web/review/styles.css:1-202`).
+- Test runner: pytest is configured to include the repository root in Python import paths (`pyproject.toml:1-2`), and tests live in `tests/test_vocabdb.py` (`tests/test_vocabdb.py:12-166`).
 
-## Confirmed Features
+## Implemented Features
 
-- Grammar taxonomy definition: categories and subpatterns are stored in `data/grammar_patterns/grammar_taxonomy.yaml`; the current taxonomy contains 18 top-level categories and covers 378 subpatterns (`data/grammar_patterns/grammar_taxonomy.yaml:1-495`).
-- Template-based sentence generation: the generator reads every `*.yaml` file in `data/templates` (`scripts/build_deck.py:5-9`).
-- Variable expansion: the current script expands the `noun` variable from template data (`scripts/build_deck.py:11-17`).
-- CSV export: generated cards are written to `generated.csv` (`scripts/build_deck.py:26-28`).
+- Database initialization creates tables for words, meanings, examples, wordbook entries, audio assets, and generation reviews (`vocabdb/db.py:10-86`, `vocabdb/db.py:97-102`).
+- Anki TSV import reads tab-separated note rows after skipping Anki metadata headers and inserts normalized vocabulary data (`vocabdb/importers.py:43-61`, `vocabdb/importers.py:64-142`).
+- Validation reports duplicate headwords, missing pronunciation, missing example translations, missing word audio, and missing example audio (`vocabdb/validation.py:17-106`).
+- JSON review export returns `metadata.schema = vocabdb.review.v1`, word count, and nested word records with meanings, examples, wordbooks, and audio refs (`vocabdb/exporters.py:10-45`).
+- The web review UI loads `vocabulary.json`, renders cards, supports text search, and filters by example review status (`web/review/app.js:12-68`, `web/review/app.js:71-141`).
 
-## Current Limitations
+## Commands
 
-- The full card schema in the specification contains fields such as `id`, `ja_translation`, `explanation`, `error_category`, and `source_template` (`docs/specification/L2_card_schema.md:3-19`), but the current script exports only `incorrect_sentence`, `correct_sentence`, `grammar_unit`, `difficulty`, and `eiken` (`scripts/build_deck.py:18-24`).
-- The generation specification includes validator and dedupe steps (`docs/specification/L3_generation_pipeline.md:3-8`), but no validator or dedupe implementation exists in the current file list.
+The CLI is exposed through `python -m vocabdb` because `vocabdb/__main__.py` delegates to `vocabdb.cli.main` (`vocabdb/__main__.py:1-3`).
+
+- `python -m vocabdb init-db --db vocabulary.db`
+- `python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db`
+- `python -m vocabdb validate --db vocabulary.db`
+- `python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json`
+- `python -m vocabdb serve-review`
+- `pytest`
 
 ## Unconfirmed
 
-- Python runtime version is unconfirmed because no version file, package manifest, CI workflow, or lock file exists.
-- Dependency versions are unconfirmed because no dependency manifest or lock file exists.
+- CI behavior is unconfirmed because `.github/` does not exist.
+- Package installation behavior is unconfirmed because no dependency manifest or lock file defines installable runtime dependencies.

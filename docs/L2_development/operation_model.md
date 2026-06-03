@@ -1,33 +1,62 @@
 # Operation Model
 
-## Confirmed Command
+## Local Workflow
 
-Run the current generator from the repository root:
+Run commands from the repository root.
+
+1. Initialize a SQLite database:
+
+   ```bash
+   python -m vocabdb init-db --db vocabulary.db
+   ```
+
+   This calls `init_db`, which creates parent directories as needed and executes the schema (`vocabdb/cli.py:44-47`, `vocabdb/db.py:97-102`).
+
+2. Import the current Anki TSV source:
+
+   ```bash
+   python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
+   ```
+
+   The importer skips lines beginning with `#`, parses tab-separated rows with the configured Anki columns, and inserts normalized records (`vocabdb/importers.py:12-61`, `vocabdb/importers.py:64-142`).
+
+3. Validate data quality:
+
+   ```bash
+   python -m vocabdb validate --db vocabulary.db
+   ```
+
+   The command prints each validation issue and exits with status `1` when issues exist (`vocabdb/cli.py:54-65`).
+
+4. Export review JSON:
+
+   ```bash
+   python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+   ```
+
+   The exporter writes formatted UTF-8 JSON with `ensure_ascii=False` (`vocabdb/exporters.py:48-56`).
+
+5. Serve the review UI:
+
+   ```bash
+   python -m vocabdb serve-review
+   ```
+
+   The default host and port are `127.0.0.1` and `8000`, and the default served directory is `web/review` (`vocabdb/cli.py:37-40`, `vocabdb/cli.py:80-84`).
+
+## Test Command
 
 ```bash
-python scripts/build_deck.py
+pytest
 ```
 
-This command is grounded in the generator implementation: it reads YAML templates from `data/templates` and writes `generated.csv` in the current working directory (`scripts/build_deck.py:5-28`).
+The test suite imports the local `vocabdb` package because `pyproject.toml` sets `pythonpath = ["."]` for pytest (`pyproject.toml:1-2`).
 
-## Expected Inputs
+## Generated Files
 
-- Template YAML files must exist under `data/templates` because the script glob is `Path("data/templates").glob("*.yaml")` (`scripts/build_deck.py:5`).
-- Each template must provide `correct`, `incorrect_patterns`, `variables.noun`, and `metadata` fields used by the script (`scripts/build_deck.py:11-24`). The sample template provides those fields (`data/templates/sample_template.yaml:1-24`).
-
-## Expected Output
-
-The script writes `generated.csv` with UTF-8 BOM encoding (`utf-8-sig`) and prints `generated.csv created` (`scripts/build_deck.py:26-28`).
-
-## Installation
-
-No install command is confirmed. The script imports `pandas` and `yaml` (`scripts/build_deck.py:1-2`), but the repository does not include a dependency manifest or lock file.
-
-## Build And Test
-
-No CI workflow, package script, test directory, or test command is present in the observed repository. The only confirmed runnable command is `python scripts/build_deck.py`.
+The database and review JSON are local generated files and should not be committed (`.gitignore:17-30`).
 
 ## Unconfirmed
 
-- Exact setup command is unconfirmed because dependency files are absent. Add `requirements.txt` or `pyproject.toml` to make installation reproducible.
-- Test command is unconfirmed because no test files or CI test steps exist.
+- CI execution is unconfirmed because no `.github/workflows/` directory exists.
+- Reproducible environment setup is unconfirmed because no lock file or dependency manifest pins pytest or Python versions.

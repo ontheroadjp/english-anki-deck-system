@@ -9,9 +9,29 @@
     "docs/specification"
   ],
   "commands": {
-    "build_deck": {
-      "command": "python scripts/build_deck.py",
-      "evidence": "scripts/build_deck.py:1-28"
+    "init_db": {
+      "command": "python -m vocabdb init-db --db vocabulary.db",
+      "evidence": "vocabdb/cli.py:23-24"
+    },
+    "import_anki": {
+      "command": "python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db",
+      "evidence": "vocabdb/cli.py:26-28"
+    },
+    "validate": {
+      "command": "python -m vocabdb validate --db vocabulary.db",
+      "evidence": "vocabdb/cli.py:30-31"
+    },
+    "export_json": {
+      "command": "python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json",
+      "evidence": "vocabdb/cli.py:33-35"
+    },
+    "serve_review": {
+      "command": "python -m vocabdb serve-review",
+      "evidence": "vocabdb/cli.py:37-40"
+    },
+    "test": {
+      "command": "pytest",
+      "evidence": "pyproject.toml:1-2"
     }
   },
   "primary_docs": {
