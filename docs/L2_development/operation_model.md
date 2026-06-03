@@ -2,55 +2,55 @@
 
 ## Local Workflow
 
-Run commands from the repository root.
+All CLI invocations assume the working directory is `backend/`. The defaults for `--output` and `--directory` are relative to `backend/` (`backend/vocabdb/cli.py:15-16`, `backend/vocabdb/cli.py:38`).
 
 1. Initialize a SQLite database:
 
    ```bash
-   python -m vocabdb init-db --db vocabulary.db
+   cd backend && python -m vocabdb init-db --db vocabulary.db
    ```
 
-   This calls `init_db`, which creates parent directories as needed and executes the schema (`vocabdb/cli.py:44-47`, `vocabdb/db.py:97-102`).
+   This calls `init_db`, which creates parent directories as needed and executes the schema (`backend/vocabdb/cli.py:44-47`, `backend/vocabdb/db.py:98-103`).
 
 2. Import the current Anki TSV source:
 
    ```bash
-   python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
+   cd backend && python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
    ```
 
-   The importer skips lines beginning with `#`, parses tab-separated rows with the configured Anki columns, and inserts normalized records (`vocabdb/importers.py:12-61`, `vocabdb/importers.py:64-142`).
+   The importer skips lines beginning with `#`, parses tab-separated rows with the configured Anki columns, and inserts normalized records (`backend/vocabdb/importers.py:12-61`, `backend/vocabdb/importers.py:64-142`).
 
 3. Validate data quality:
 
    ```bash
-   python -m vocabdb validate --db vocabulary.db
+   cd backend && python -m vocabdb validate --db vocabulary.db
    ```
 
-   The command prints each validation issue and exits with status `1` when issues exist (`vocabdb/cli.py:54-65`).
+   The command prints each validation issue and exits with status `1` when issues exist (`backend/vocabdb/cli.py:54-65`).
 
 4. Export review JSON:
 
    ```bash
-   python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+   cd backend && python -m vocabdb export-json --db vocabulary.db
    ```
 
-   The exporter writes formatted UTF-8 JSON with `ensure_ascii=False` (`vocabdb/exporters.py:48-56`).
+   The default output path is `../frontend/review/vocabulary.json` (`backend/vocabdb/cli.py:16`, `backend/vocabdb/cli.py:35`). The exporter writes formatted UTF-8 JSON with `ensure_ascii=False` (`backend/vocabdb/exporters.py:48-56`).
 
 5. Serve the review UI:
 
    ```bash
-   python -m vocabdb serve-review
+   cd backend && python -m vocabdb serve-review
    ```
 
-   The default host and port are `127.0.0.1` and `8000`, and the default served directory is `web/review` (`vocabdb/cli.py:37-40`, `vocabdb/cli.py:80-84`).
+   The default host and port are `127.0.0.1` and `8000`, and the default served directory is `../frontend/review` (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`).
 
 ## Test Command
 
 ```bash
-pytest
+cd backend && pytest
 ```
 
-The test suite imports the local `vocabdb` package because `pyproject.toml` sets `pythonpath = ["."]` for pytest (`pyproject.toml:1-2`).
+The test suite imports the local `vocabdb` package because `backend/pyproject.toml` sets `pythonpath = ["."]` for pytest (`backend/pyproject.toml:1-2`).
 
 ## Generated Files
 

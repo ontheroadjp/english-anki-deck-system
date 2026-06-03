@@ -2,74 +2,78 @@
 
 大学受験向け英単語データを SQLite に保存し、レビュー用 JSON とブラウザ表示を生成する語彙 DB システム。
 
-このリポジトリは `DB layer -> logic layer -> output layer` の構造で管理する。DB 層は SQLite スキーマと接続、ロジック層は Anki TSV import・validation・review payload assembly、出力層は JSON export と静的 Web review UI を担当する。
+このリポジトリは `backend/` と `frontend/` の二層構成で管理する。`backend/` は SQLite スキーマ、Anki TSV import、validation、JSON export、local review UI serving を担当する Python 実装と、その pytest テストおよびソース TSV を含む。`frontend/` は静的レビュー UI を含む。`docs/` と `README.md` などのドキュメント類はルートに置く。
 
 ## Features
 
-- SQLite schema for words, meanings, examples, wordbook entries, audio assets, and AI generation review state (`vocabdb/db.py:7-87`).
-- Anki TSV import for the current source data in `anki_csv/target_1900_6th.txt` (`vocabdb/importers.py:12-61`).
-- Data validation for duplicate headwords, missing pronunciation, missing example translations, and missing audio refs (`vocabdb/validation.py:17-106`).
-- Review JSON export with `vocabdb.review.v1` metadata and nested word data (`vocabdb/exporters.py:10-56`).
-- Static browser review UI that loads `vocabulary.json`, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`web/review/index.html:11-35`, `web/review/app.js:60-138`).
+- SQLite schema for words, meanings, examples, wordbook entries, audio assets, and AI generation review state (`backend/vocabdb/db.py:7-87`).
+- Anki TSV import for the current source data in `backend/anki_csv/target_1900_6th.txt` (`backend/vocabdb/importers.py:12-61`).
+- Data validation for duplicate headwords, missing pronunciation, missing example translations, and missing audio refs (`backend/vocabdb/validation.py:17-106`).
+- Review JSON export with `vocabdb.review.v1` metadata and nested word data (`backend/vocabdb/exporters.py:10-56`).
+- Static browser review UI that loads `vocabulary.json`, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`frontend/review/index.html:11-35`, `frontend/review/app.js:60-138`).
 
 ## Installation
 
-No install command is defined. The implementation uses Python standard-library modules for the application code, and the repository currently defines only pytest path configuration in `pyproject.toml` (`pyproject.toml:1-2`).
+No install command is defined. The implementation uses Python standard-library modules for the application code, and the repository currently defines only pytest path configuration in `backend/pyproject.toml` (`backend/pyproject.toml:1-2`).
 
 For local testing, install `pytest` in your Python environment if it is not already available.
 
 ## Usage
 
-Run from the repository root.
+Run all backend commands from the `backend/` directory. The default output paths point at `../frontend/review/`.
 
 Initialize the SQLite database:
 
 ```bash
-python -m vocabdb init-db --db vocabulary.db
+cd backend && python -m vocabdb init-db --db vocabulary.db
 ```
 
 Import the current Anki TSV source:
 
 ```bash
-python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
+cd backend && python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
 ```
 
 Validate imported vocabulary data:
 
 ```bash
-python -m vocabdb validate --db vocabulary.db
+cd backend && python -m vocabdb validate --db vocabulary.db
 ```
 
-Export review JSON for the web UI:
+Export review JSON for the web UI (defaults to `../frontend/review/vocabulary.json`):
 
 ```bash
-python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+cd backend && python -m vocabdb export-json --db vocabulary.db
 ```
 
-Serve the review UI locally:
+Serve the review UI locally (defaults to serving `../frontend/review`):
 
 ```bash
-python -m vocabdb serve-review
+cd backend && python -m vocabdb serve-review
 ```
 
-The default review server binds to `127.0.0.1:8000` and serves `web/review/` (`vocabdb/cli.py:37-40`, `vocabdb/cli.py:80-84`).
+The default review server binds to `127.0.0.1:8000` and serves `../frontend/review/` (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`).
 
 Run tests:
 
 ```bash
-pytest
+cd backend && pytest
 ```
 
 ## Design Principles
 
-- SQLite is the source of truth for normalized vocabulary data. The schema keeps words, meanings, examples, source wordbook metadata, audio refs, and generation review status separate so review and export logic can query them consistently (`vocabdb/db.py:10-86`).
+- SQLite is the source of truth for normalized vocabulary data. The schema keeps words, meanings, examples, source wordbook metadata, audio refs, and generation review status separate so review and export logic can query them consistently (`backend/vocabdb/db.py:10-87`).
 - JSON review output is the v1 output surface. Generated SQLite files and review JSON are ignored because they are local artifacts (`.gitignore:17-30`).
-- Imported Anki audio values are preserved as refs, not treated as public URLs. The audio schema has both `ref` and `url`, and the importer stores Anki sound fields in `ref` (`vocabdb/db.py:65-72`, `vocabdb/importers.py:141-158`).
-- AI-generated example review is represented as explicit status values: `draft`, `approved`, and `rejected` (`vocabdb/db.py:41-43`, `vocabdb/db.py:77-86`).
+- Imported Anki audio values are preserved as refs, not treated as public URLs. The audio schema has both `ref` and `url`, and the importer stores Anki sound fields in `ref` (`backend/vocabdb/db.py:66-73`, `backend/vocabdb/importers.py:141-142`, `backend/vocabdb/importers.py:181-194`).
+- AI-generated example review is represented as explicit status values: `draft`, `approved`, and `rejected` (`backend/vocabdb/db.py:43-44`, `backend/vocabdb/db.py:78-87`).
 
 ## Architecture
 
-1. DB layer: `vocabdb/db.py` creates SQLite tables and connection helpers.
-2. Logic layer: `vocabdb/importers.py` imports Anki TSV data, and `vocabdb/validation.py` checks data quality.
-3. Output layer: `vocabdb/exporters.py` writes review JSON, and `web/review/` renders that JSON in the browser.
-4. CLI entrypoint: `python -m vocabdb` dispatches `init-db`, `import-anki`, `validate`, `export-json`, and `serve-review` (`vocabdb/__main__.py:1-3`, `vocabdb/cli.py:19-77`).
+1. Backend (`backend/`):
+   - DB layer: `backend/vocabdb/db.py` creates SQLite tables and connection helpers.
+   - Logic layer: `backend/vocabdb/importers.py` imports Anki TSV data, and `backend/vocabdb/validation.py` checks data quality.
+   - Output layer: `backend/vocabdb/exporters.py` writes review JSON.
+   - CLI entrypoint: `python -m vocabdb` dispatches `init-db`, `import-anki`, `validate`, `export-json`, and `serve-review` (`backend/vocabdb/__main__.py:1-3`, `backend/vocabdb/cli.py:19-77`).
+2. Frontend (`frontend/`):
+   - `frontend/review/` renders the generated review JSON in the browser (`frontend/review/index.html:1-39`, `frontend/review/app.js:31-138`).
+3. Tests: `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-166`).
