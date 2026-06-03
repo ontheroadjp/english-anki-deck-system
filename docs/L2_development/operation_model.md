@@ -64,9 +64,9 @@ The test suite imports the local `vocabdb` package because `backend/pyproject.to
 
 GitHub Actions runs backend tests on pull requests and `main` pushes. The workflow checks out the repository, sets up Python 3.11, installs the backend with test dependencies from `backend/`, and runs `pytest` from `backend/` (`.github/workflows/ci-cd.yml:1-35`).
 
-On successful `main` pushes, the deploy job connects to the VPS with `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, installs the backend package with `python3 -m pip install --user -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:37-64`).
+On successful `main` pushes, the deploy job connects to the VPS with `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, creates `english/.venv` if absent and installs the backend package with `.venv/bin/pip install -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:37-64`).
 
-The repository provides server-side samples but does not install them automatically. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, while `server/systemd/dict-english.service` defines `DEPLOY_PATH`, reads `$DEPLOY_PATH/english/.env`, and runs `python3 -m vocabdb serve-api` from `$DEPLOY_PATH/english/backend`. `.env.example` is the commented template for the server-side `.env` file (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-16`, `.env.example:1-8`).
+The repository provides server-side samples but does not install them automatically. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, while `server/systemd/dict-english.service` defines `DEPLOY_PATH`, reads `$DEPLOY_PATH/english/.env`, and runs `vocabdb serve-api` via `$DEPLOY_PATH/english/.venv/bin/python` from `$DEPLOY_PATH/english/backend`. `.env.example` is the commented template for the server-side `.env` file (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-16`, `.env.example:1-8`).
 
 ## Generated Files
 
