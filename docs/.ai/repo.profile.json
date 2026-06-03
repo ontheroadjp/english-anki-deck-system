@@ -31,11 +31,11 @@
     },
     "ci": {
       "command": "GitHub Actions: .github/workflows/ci-cd.yml",
-      "evidence": ".github/workflows/ci-cd.yml:1-35"
+      "evidence": ".github/workflows/ci-cd.yml:14-37"
     },
     "deploy": {
       "command": "GitHub Actions main push deploy job",
-      "evidence": ".github/workflows/ci-cd.yml:37-64"
+      "evidence": ".github/workflows/ci-cd.yml:84-130"
     },
     "test": {
       "command": "cd backend && pytest",
