@@ -60,7 +60,15 @@ jobs:
             "set -eu
              cd \"$DEPLOY_PATH\"
              if [ ! -d english/.git ]; then
+               backup_dir=
+               if [ -e english ]; then
+                 backup_dir=\"english.preclone.$(date +%s)\"
+                 mv english \"$backup_dir\"
+               fi
                git clone git@github:ontheroadjp/english-anki-deck-system english
+               if [ -n \"${backup_dir:-}\" ] && [ -f \"$backup_dir/.env\" ]; then
+                 mv \"$backup_dir/.env\" english/.env
+               fi
              fi
              cd english
              git pull --ff-only
