@@ -29,6 +29,14 @@
       "command": "cd backend && python -m vocabdb serve-review",
       "evidence": "backend/vocabdb/cli.py:37-40"
     },
+    "ci": {
+      "command": "GitHub Actions: .github/workflows/ci-cd.yml",
+      "evidence": ".github/workflows/ci-cd.yml:1-35"
+    },
+    "deploy": {
+      "command": "GitHub Actions main push deploy job",
+      "evidence": ".github/workflows/ci-cd.yml:37-64"
+    },
     "test": {
       "command": "cd backend && pytest",
       "evidence": "backend/pyproject.toml:1-2"

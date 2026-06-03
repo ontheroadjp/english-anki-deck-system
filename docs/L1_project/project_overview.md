@@ -11,11 +11,14 @@ This repository implements a SQLite-backed English vocabulary database, local re
 - API framework: FastAPI with Uvicorn serving, declared in backend package metadata (`backend/pyproject.toml:1-10`, `backend/vocabdb/api.py:5-45`, `backend/vocabdb/cli.py:93-101`).
 - Frontend: static HTML, CSS, and JavaScript under `frontend/review/`; the UI fetches word data from the REST API (`frontend/review/index.html:1-39`, `frontend/review/app.js:1-244`, `frontend/review/styles.css:1`).
 - Test runner: pytest is configured to add the `backend/` directory to Python import paths, with pytest and httpx declared as optional test dependencies (`backend/pyproject.toml:12-20`); tests live in `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-296`).
+- CI/CD: GitHub Actions runs backend pytest on pull requests and `main` pushes, then deploys the backend API to a VPS over SSH on successful `main` pushes (`.github/workflows/ci-cd.yml:1-64`).
 
 ## Repository Split
 
 - `backend/` holds the Python package, its tests, and the imported TSV source.
 - `frontend/` holds static browser assets (currently the review UI).
+- `.github/workflows/` holds GitHub Actions automation.
+- `server/` holds manually applied nginx and systemd samples for the `dict-english` backend API service.
 - `docs/`, `README.md`, `AGENTS.md`, and `CLAUDE.md` stay at the repository root.
 
 ## Implemented Features
@@ -26,6 +29,7 @@ This repository implements a SQLite-backed English vocabulary database, local re
 - JSON review export returns `metadata.schema = vocabdb.review.v1`, word count, and nested word records with meanings, examples, wordbooks, and audio refs (`backend/vocabdb/exporters.py:10-45`).
 - The FastAPI REST API returns health status, a word list, and individual word records from API-specific SQLite queries, and allows browser GET access for the static review UI (`backend/vocabdb/api.py:10-131`).
 - The web review UI loads words from `/api/words`, supports text search, filters by example review status, and renders the data either as word cards or as a per-example table selectable via a tab strip (`frontend/review/index.html:27-35`, `frontend/review/app.js:31-141`).
+- CI/CD runs backend tests and deploys the backend API service named `dict-english` to a VPS using GitHub Secrets and SSH (`.github/workflows/ci-cd.yml:1-64`, `server/systemd/dict-english.service:1-15`).
 
 ## Commands
 
@@ -41,5 +45,5 @@ The CLI is exposed through `python -m vocabdb` because `backend/vocabdb/__main__
 
 ## Unconfirmed
 
-- CI behavior is unconfirmed because `.github/` does not exist.
-- A production API deployment target is unconfirmed because no deployment configuration exists.
+- GitHub repository secret values are not stored in the repository.
+- VPS-side nginx and systemd installation remains a manual operation using the samples in `server/`.

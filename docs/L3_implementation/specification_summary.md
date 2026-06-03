@@ -48,11 +48,17 @@ The static UI declares a search box, a review-status filter, and a Cards / Table
 
 `backend/pyproject.toml` declares the backend package name, Python version requirement, FastAPI and Uvicorn runtime dependencies, optional test dependencies for httpx and pytest, setuptools package discovery limited to `vocabdb*`, and pytest `pythonpath` configuration (`backend/pyproject.toml:1-20`).
 
+## CI/CD and Server Configuration
+
+`.github/workflows/ci-cd.yml` defines the GitHub Actions automation. The `test` job runs on pull requests and `main` pushes, sets up Python 3.11, installs the backend package with the `test` extra from `backend/`, and runs `pytest` from `backend/` (`.github/workflows/ci-cd.yml:1-35`). The `deploy` job runs only for `main` push events after `test` succeeds, connects to the VPS using `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, installs the backend package with `python3 -m pip install --user -e backend`, and restarts `dict-english` (`.github/workflows/ci-cd.yml:37-64`).
+
+Server-side configuration samples are tracked under `server/` for manual installation. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local backend API process (`server/nginx/dict-english.conf:1-17`). `server/systemd/dict-english.service` loads `$HOME/.config/dict-english/dict-english.env`, changes into `$DICT_ENGLISH_APP_DIR/backend`, and runs `python3 -m vocabdb serve-api` with DB, host, and port values from the env file (`server/systemd/dict-english.service:1-15`, `server/systemd/dict-english.env.example:1-4`).
+
 ## Generated Artifacts
 
 `backend/vocabulary.db`, `frontend/review/vocabulary.json`, and Python `*.egg-info/` metadata are generated local artifacts and are excluded from git (`.gitignore:5-30`).
 
 ## Unconfirmed
 
-- No production deployment mechanism is implemented.
 - No migration versioning system is implemented beyond the idempotent schema string in `backend/vocabdb/db.py`.
+- VPS-side nginx and systemd installation is manual and not automated by the repository.

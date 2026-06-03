@@ -60,11 +60,19 @@ cd backend && pytest
 
 The test suite imports the local `vocabdb` package because `backend/pyproject.toml` sets `pythonpath = ["."]` for pytest, and it uses FastAPI's `TestClient` for API coverage (`backend/pyproject.toml:19-20`, `backend/tests/test_vocabdb.py:5-11`).
 
+## CI/CD
+
+GitHub Actions runs backend tests on pull requests and `main` pushes. The workflow checks out the repository, sets up Python 3.11, installs the backend with test dependencies from `backend/`, and runs `pytest` from `backend/` (`.github/workflows/ci-cd.yml:1-35`).
+
+On successful `main` pushes, the deploy job connects to the VPS with `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, installs the backend package with `python3 -m pip install --user -e backend`, and restarts the `dict-english` systemd service (`.github/workflows/ci-cd.yml:37-64`).
+
+The repository provides server-side samples but does not install them automatically. `server/nginx/dict-english.conf` proxies `/dict/english/` to the local API process, while `server/systemd/dict-english.service` reads `$HOME/.config/dict-english/dict-english.env` and runs `python3 -m vocabdb serve-api` from the backend directory (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-15`, `server/systemd/dict-english.env.example:1-4`).
+
 ## Generated Files
 
 The database, review JSON, and Python egg-info metadata are local generated files and should not be committed (`.gitignore:5-30`).
 
 ## Unconfirmed
 
-- CI execution is unconfirmed because no `.github/workflows/` directory exists.
 - Reproducible environment setup is unconfirmed because no lock file pins dependency versions.
+- VPS-side nginx and systemd installation is manual and not performed by GitHub Actions.

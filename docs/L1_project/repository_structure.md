@@ -4,6 +4,8 @@
 
 - `backend/`: Python application code. Contains the `vocabdb` package, its tests, the imported Anki TSV source data, and Python package/test configuration. Commands are executed from this directory (`backend/vocabdb/cli.py:15-18`, `backend/vocabdb/cli.py:38-47`).
 - `frontend/`: static browser assets. Currently contains only the review UI (`frontend/review/index.html:1-39`).
+- `.github/workflows/`: GitHub Actions automation. `ci-cd.yml` runs backend tests and deploys the backend API on successful `main` pushes (`.github/workflows/ci-cd.yml:1-64`).
+- `server/`: manually applied VPS configuration samples. `server/nginx/` contains the reverse proxy sample, and `server/systemd/` contains the `dict-english` service and env example (`server/nginx/dict-english.conf:1-17`, `server/systemd/dict-english.service:1-15`, `server/systemd/dict-english.env.example:1-4`).
 - `docs/`: repository documentation and the AI repo profile. The profile lists documentation roots and primary docs (`docs/.ai/repo.profile.json:4-10`, `docs/.ai/repo.profile.json:37-40`).
 - `README.md`: user-facing feature, command, and architecture summary.
 - `AGENTS.md`: AI agent entry-point notes.
@@ -20,6 +22,13 @@
 ## frontend/
 
 - `frontend/review/`: static review UI. `index.html` declares the search box, status filter, Cards/Table tab strip, and two sibling view sections; `app.js` fetches `/api/words` from the configured API base and dispatches rendering by active view (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-92`).
+
+## CI/CD and server/
+
+- `.github/workflows/ci-cd.yml`: runs `pytest` from `backend/` on pull requests and `main` pushes. On successful `main` pushes, it connects to the VPS using `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, installs the backend package, and restarts `dict-english` (`.github/workflows/ci-cd.yml:1-64`).
+- `server/nginx/dict-english.conf`: sample nginx server block that redirects `/dict/english` to `/dict/english/` and proxies `/dict/english/` to the local backend API (`server/nginx/dict-english.conf:1-17`).
+- `server/systemd/dict-english.service`: sample systemd service for the backend API. It loads `$HOME/.config/dict-english/dict-english.env`, changes into the backend directory, and runs `python3 -m vocabdb serve-api` (`server/systemd/dict-english.service:1-15`).
+- `server/systemd/dict-english.env.example`: sample environment values consumed by the systemd service (`server/systemd/dict-english.env.example:1-4`).
 
 ## Default Paths Across Layers
 
