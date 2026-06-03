@@ -59,6 +59,10 @@ jobs:
           ssh -i ~/.ssh/deploy_key "$DEPLOY_USER@$DEPLOY_HOST" \
             "set -eu
              cd \"$DEPLOY_PATH\"
+             if [ ! -d english/.git ]; then
+               git clone git@github:ontheroadjp/english-anki-deck-system english
+             fi
+             cd english
              git pull --ff-only
              python3 -m pip install --user -e backend
              sudo systemctl restart dict-english"
