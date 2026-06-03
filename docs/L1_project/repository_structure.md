@@ -28,7 +28,7 @@
 
 - `.github/workflows/ci-cd.yml`: runs `pytest` from `backend/` on pull requests and `main` pushes. On successful `main` pushes, it connects to the VPS using `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, and `DEPLOY_PATH`, runs `git pull --ff-only`, installs the backend package, and restarts `dict-english` (`.github/workflows/ci-cd.yml:1-64`).
 - `server/nginx/dict-english.conf`: sample nginx server block that redirects `/dict/english` to `/dict/english/` and proxies `/dict/english/` to the local backend API (`server/nginx/dict-english.conf:1-17`).
-- `server/systemd/dict-english.service`: sample systemd service for the backend API. It defines `DEPLOY_PATH`, loads `$DEPLOY_PATH/english/.env`, changes into `$DEPLOY_PATH/english/backend`, and runs `python3 -m vocabdb serve-api` (`server/systemd/dict-english.service:1-16`).
+- `server/systemd/dict-english.service`: sample systemd service for the backend API. It defines `DEPLOY_PATH`, loads `$DEPLOY_PATH/english/.env`, changes into `$DEPLOY_PATH/english/backend`, and runs `vocabdb serve-api` via `$DEPLOY_PATH/english/.venv/bin/python` (`server/systemd/dict-english.service:1-16`).
 - `.env.example`: sample environment values consumed by the systemd service from `$DEPLOY_PATH/english/.env` (`.env.example:1-8`).
 
 ## Default Paths Across Layers
