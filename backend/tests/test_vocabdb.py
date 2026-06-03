@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import json
 
+from fastapi.testclient import TestClient
+
+from vocabdb.api import create_app
 from vocabdb.db import connect, init_db
 from vocabdb.exporters import build_review_payload, export_review_json
 from vocabdb.importers import import_anki_tsv, insert_ai_example
@@ -164,6 +167,61 @@ def test_ai_generated_examples_are_distinct_from_imported_examples(tmp_path):
     example_sources = {example["source"] for example in payload["words"][0]["examples"]}
 
     assert example_sources == {"imported", "ai_generated"}
+
+
+def test_api_health_returns_ok(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_api_lists_words_from_database(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "approved", headword="create")
+    _insert_word(db_path, "draft", headword="distinguish")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["metadata"]["word_count"] == 2
+    assert [word["headword"] for word in data["words"]] == ["create", "distinguish"]
+    assert data["words"][0]["meanings"][0]["ja"] == "意味"
+    assert data["words"][0]["examples"][0]["review_status"] == "approved"
+    assert data["words"][0]["audio"]["word"][0]["ref"] == "[sound:word.mp3]"
+
+
+def test_api_gets_word_by_id(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    _insert_word(db_path, "approved", headword="create")
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == 1
+    assert data["headword"] == "create"
+    assert data["wordbooks"][0]["wordbook_name"] == "testbook"
+
+
+def test_api_returns_404_for_missing_word(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words/999")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Word not found"}
 
 
 def _insert_word(
