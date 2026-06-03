@@ -2,12 +2,31 @@ const state = {
   words: [],
   query: "",
   status: "",
+  view: "cards",
 };
+
+const TABLE_COLUMNS = [
+  "Headword",
+  "Pronunciation",
+  "Part of speech",
+  "Exam level",
+  "Meanings",
+  "Example sentence",
+  "Example translation",
+  "Source",
+  "Status",
+  "Wordbook",
+  "Word audio",
+  "Example audio",
+];
 
 const summary = document.querySelector("#summary");
 const list = document.querySelector("#word-list");
+const table = document.querySelector("#word-table");
 const search = document.querySelector("#search");
 const status = document.querySelector("#status");
+const tabCards = document.querySelector("#tab-cards");
+const tabTable = document.querySelector("#tab-table");
 
 fetch("vocabulary.json")
   .then((response) => {
@@ -23,7 +42,9 @@ fetch("vocabulary.json")
   })
   .catch((error) => {
     summary.textContent = error.message;
-    list.innerHTML = '<p class="empty">Run export-json before opening this page.</p>';
+    const message = '<p class="empty">Run export-json before opening this page.</p>';
+    list.innerHTML = message;
+    table.innerHTML = message;
   });
 
 search.addEventListener("input", (event) => {
@@ -36,13 +57,84 @@ status.addEventListener("change", (event) => {
   render();
 });
 
+tabCards.addEventListener("click", () => setView("cards"));
+tabTable.addEventListener("click", () => setView("table"));
+
+function setView(view) {
+  if (state.view === view) return;
+  state.view = view;
+  const cardsActive = view === "cards";
+  tabCards.setAttribute("aria-selected", String(cardsActive));
+  tabTable.setAttribute("aria-selected", String(!cardsActive));
+  list.hidden = !cardsActive;
+  table.hidden = cardsActive;
+  render();
+}
+
 function render() {
   const words = state.words.filter(matchesFilters);
+  if (state.view === "cards") {
+    renderCards(words);
+  } else {
+    renderTable(words);
+  }
+}
+
+function renderCards(words) {
   if (words.length === 0) {
     list.innerHTML = '<p class="empty">No words match the current filters.</p>';
     return;
   }
   list.replaceChildren(...words.map(renderWord));
+}
+
+function renderTable(words) {
+  const rows = words.flatMap((word) =>
+    (word.examples || [])
+      .filter((example) => !state.status || example.review_status === state.status)
+      .map((example) => renderTableRow(word, example)),
+  );
+
+  if (rows.length === 0) {
+    table.innerHTML = '<p class="empty">No examples match the current filters.</p>';
+    return;
+  }
+
+  const tableEl = document.createElement("table");
+  tableEl.className = "word-table";
+  tableEl.innerHTML = `
+    <thead>
+      <tr>${TABLE_COLUMNS.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr>
+    </thead>
+    <tbody>${rows.join("")}</tbody>
+  `;
+  table.replaceChildren(tableEl);
+}
+
+function renderTableRow(word, example) {
+  const meanings = (word.meanings || []).map((meaning) => meaning.ja).filter(Boolean).join("; ");
+  const wordAudio = (word.audio?.word || []).map((audio) => audio.ref || audio.url).filter(Boolean).join(", ");
+  const exampleAudio = (word.audio?.examples || [])
+    .filter((audio) => audio.example_id === example.id)
+    .map((audio) => audio.ref || audio.url)
+    .filter(Boolean)
+    .join(", ");
+  return `
+    <tr>
+      <td>${escapeHtml(word.headword)}</td>
+      <td>${escapeHtml(word.pronunciation || "")}</td>
+      <td>${escapeHtml(word.part_of_speech || "")}</td>
+      <td>${escapeHtml(word.exam_level || "")}</td>
+      <td class="cell-meanings">${escapeHtml(meanings)}</td>
+      <td class="cell-wrap">${escapeHtml(example.sentence || "")}</td>
+      <td class="cell-wrap">${escapeHtml(example.ja_translation || "")}</td>
+      <td>${sourceBadge(example.source)}</td>
+      <td>${statusBadge(example.review_status)}</td>
+      <td class="cell-wordbook">${escapeHtml(wordbookLabel(word))}</td>
+      <td>${escapeHtml(wordAudio || "")}</td>
+      <td>${escapeHtml(exampleAudio || "")}</td>
+    </tr>
+  `;
 }
 
 function matchesFilters(word) {

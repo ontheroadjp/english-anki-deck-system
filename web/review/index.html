@@ -24,8 +24,14 @@
       </div>
     </header>
 
+    <nav class="tabs" role="tablist" aria-label="View switcher">
+      <button id="tab-cards" class="tab" role="tab" type="button" aria-selected="true" aria-controls="word-list">Cards</button>
+      <button id="tab-table" class="tab" role="tab" type="button" aria-selected="false" aria-controls="word-table">Table</button>
+    </nav>
+
     <main>
-      <section id="word-list" class="word-list" aria-live="polite"></section>
+      <section id="word-list" class="word-list" role="tabpanel" aria-labelledby="tab-cards" aria-live="polite"></section>
+      <section id="word-table" class="word-table-wrapper" role="tabpanel" aria-labelledby="tab-table" aria-live="polite" hidden></section>
     </main>
 
     <script src="app.js"></script>

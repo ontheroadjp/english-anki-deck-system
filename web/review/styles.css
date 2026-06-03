@@ -62,6 +62,37 @@ select {
   padding: 0 10px;
 }
 
+.tabs {
+  display: flex;
+  gap: 4px;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 24px 0;
+}
+
+.tab {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #c9d2df;
+  border-bottom-color: transparent;
+  border-radius: 6px 6px 0 0;
+  background: #eef1f5;
+  color: #364152;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+  background: #ffffff;
+  color: #1d232f;
+}
+
+.tab:focus-visible {
+  outline: 2px solid #1f6feb;
+  outline-offset: 2px;
+}
+
 main {
   max-width: 1120px;
   margin: 0 auto;
@@ -71,6 +102,10 @@ main {
 .word-list {
   display: grid;
   gap: 14px;
+}
+
+.word-list[hidden] {
+  display: none;
 }
 
 .word-card {
@@ -190,6 +225,56 @@ ol {
   color: #667085;
 }
 
+.word-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #dce1e8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.word-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.word-table th,
+.word-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eef1f5;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.word-table th {
+  background: #f7f8fa;
+  color: #364152;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.word-table td.cell-wrap {
+  white-space: normal;
+  min-width: 240px;
+}
+
+.word-table td.cell-meanings,
+.word-table td.cell-wordbook {
+  white-space: normal;
+  min-width: 200px;
+}
+
+.word-table tr:last-child th,
+.word-table tr:last-child td {
+  border-bottom: none;
+}
+
+.word-table .badges {
+  justify-content: flex-start;
+}
+
 @media (max-width: 760px) {
   .topbar,
   .word-header {
@@ -208,5 +293,9 @@ ol {
 
   main {
     padding: 16px;
+  }
+
+  .tabs {
+    padding: 12px 16px 0;
   }
 }

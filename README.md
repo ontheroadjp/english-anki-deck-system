@@ -10,7 +10,7 @@
 - Anki TSV import for the current source data in `anki_csv/target_1900_6th.txt` (`vocabdb/importers.py:12-61`).
 - Data validation for duplicate headwords, missing pronunciation, missing example translations, and missing audio refs (`vocabdb/validation.py:17-106`).
 - Review JSON export with `vocabdb.review.v1` metadata and nested word data (`vocabdb/exporters.py:10-56`).
-- Static browser review UI that loads `vocabulary.json`, supports text search, and filters examples by review status (`web/review/index.html:11-31`, `web/review/app.js:12-68`).
+- Static browser review UI that loads `vocabulary.json`, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`web/review/index.html:11-35`, `web/review/app.js:60-138`).
 
 ## Installation
 

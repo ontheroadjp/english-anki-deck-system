@@ -28,7 +28,7 @@ The SQLite schema is stored as a SQL string in `vocabdb/db.py` and executed by `
 
 ## Web Review UI
 
-The static UI declares a search box and review-status filter in HTML (`web/review/index.html:11-31`). JavaScript fetches `vocabulary.json`, stores words in memory, filters by text and review status, and renders word cards with meanings, examples, wordbook labels, and word audio refs (`web/review/app.js:12-68`, `web/review/app.js:71-141`). CSS provides a responsive layout that stacks header and card controls under `760px` (`web/review/styles.css:183-202`).
+The static UI declares a search box, a review-status filter, and a Cards / Table tab strip in HTML, with two sibling view sections (`web/review/index.html:11-35`). JavaScript fetches `vocabulary.json`, stores words in memory, filters by text and review status, and dispatches rendering by active view (`web/review/app.js:31-89`). The card renderer outputs one card per word with meanings, examples, wordbook labels, and word audio refs (`web/review/app.js:164-208`). The table renderer outputs one row per example with twelve columns including headword, pronunciation, part of speech, exam level, meanings, example sentence, example translation, source badge, status badge, wordbook label, word audio refs, and example audio refs (`web/review/app.js:91-138`). CSS provides card, tab, and table styles plus a responsive layout that stacks header and card controls under `760px` (`web/review/styles.css:265-297`).
 
 ## Generated Artifacts
 
