@@ -55,6 +55,7 @@ function matchesFilters(word) {
     ...(word.examples || []).flatMap((example) => [
       example.sentence,
       example.ja_translation,
+      example.source,
       example.review_status,
     ]),
   ]
@@ -100,16 +101,23 @@ function renderWord(word) {
 }
 
 function renderExample(example) {
+  const sourceLabel = example.source === "ai_generated" ? "AI generated" : "Imported";
   return `
     <div class="example">
       <div class="example-top">
+        ${sourceBadge(example.source)}
         ${statusBadge(example.review_status)}
-        <span>${escapeHtml(example.source || "")}</span>
+        <span>${escapeHtml(sourceLabel)}</span>
       </div>
       <p class="sentence">${escapeHtml(example.sentence)}</p>
       <p class="translation">${escapeHtml(example.ja_translation || "No Japanese translation")}</p>
     </div>
   `;
+}
+
+function sourceBadge(value) {
+  const sourceValue = value === "ai_generated" ? "ai" : "imported";
+  return `<span class="badge source ${escapeHtml(sourceValue)}">${escapeHtml(sourceValue)}</span>`;
 }
 
 function statusBadge(value) {

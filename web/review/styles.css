@@ -131,6 +131,16 @@ h2 {
   color: #b42318;
 }
 
+.badge.source.imported {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge.source.ai {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
 .section {
   margin-top: 14px;
 }

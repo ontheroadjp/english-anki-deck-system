@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS examples (
     ja_translation TEXT,
     cloze_sentence TEXT,
     english_definition_html TEXT,
-    source TEXT NOT NULL DEFAULT 'imported',
+    source TEXT NOT NULL DEFAULT 'imported'
+        CHECK (source IN ('imported', 'ai_generated')),
     review_status TEXT NOT NULL DEFAULT 'draft'
         CHECK (review_status IN ('draft', 'approved', 'rejected')),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP

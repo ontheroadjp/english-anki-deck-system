@@ -142,6 +142,42 @@ def _insert_anki_row(conn: sqlite3.Connection, row: dict[str, str | None]) -> No
     _insert_audio(conn, word_id, example_id, "example", _clean(row.get("example_audio")))
 
 
+def insert_ai_example(
+    conn: sqlite3.Connection,
+    word_id: int,
+    meaning_id: int | None,
+    sentence: str,
+    ja_translation: str | None,
+    cloze_sentence: str | None = None,
+    english_definition_html: str | None = None,
+    review_status: str = "draft",
+) -> int:
+    return conn.execute(
+        """
+        INSERT INTO examples (
+            word_id,
+            meaning_id,
+            sentence,
+            ja_translation,
+            cloze_sentence,
+            english_definition_html,
+            source,
+            review_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, 'ai_generated', ?)
+        """,
+        (
+            word_id,
+            meaning_id,
+            sentence,
+            ja_translation,
+            cloze_sentence,
+            english_definition_html,
+            review_status,
+        ),
+    ).lastrowid
+
+
 def _insert_audio(
     conn: sqlite3.Connection,
     word_id: int,

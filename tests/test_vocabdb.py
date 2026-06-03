@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import json
-import sqlite3
 
 from vocabdb.db import connect, init_db
 from vocabdb.exporters import build_review_payload, export_review_json
-from vocabdb.importers import import_anki_tsv
+from vocabdb.importers import import_anki_tsv, insert_ai_example
 from vocabdb.validation import validate_db
 
 
@@ -57,6 +56,7 @@ def test_import_anki_tsv_and_export_review_json(tmp_path):
     assert word["headword"] == "create"
     assert word["meanings"][0]["ja"] == "を創り出す；を引き起こす"
     assert word["examples"][0]["review_status"] == "approved"
+    assert word["examples"][0]["source"] == "imported"
     assert word["wordbooks"][0]["wordbook_name"] == "英単語ターゲット1900"
     assert word["wordbooks"][0]["edition"] == "6"
     assert word["audio"]["word"][0]["ref"] == "[sound:word.mp3]"
@@ -74,6 +74,7 @@ def test_export_review_json_writes_file(tmp_path):
     data = json.loads(output.read_text(encoding="utf-8"))
     assert data["metadata"]["word_count"] == 1
     assert data["words"][0]["examples"][0]["review_status"] == "draft"
+    assert data["words"][0]["examples"][0]["source"] == "imported"
 
 
 def test_validate_db_reports_quality_issues(tmp_path):
@@ -113,6 +114,56 @@ def test_json_includes_all_review_statuses(tmp_path):
     }
 
     assert statuses == {"draft", "approved", "rejected"}
+
+
+def test_ai_generated_examples_are_distinct_from_imported_examples(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+
+    with connect(db_path) as conn:
+        word_id = conn.execute(
+            """
+            INSERT INTO words (headword, lemma, pronunciation, part_of_speech)
+            VALUES ('distinguish', 'distinguish', 'distíngwiʃ', 'verb')
+            """
+        ).lastrowid
+        meaning_id = conn.execute(
+            "INSERT INTO meanings (word_id, ja) VALUES (?, '区別する')",
+            (word_id,),
+        ).lastrowid
+        imported_example_id = conn.execute(
+            """
+            INSERT INTO examples (word_id, meaning_id, sentence, ja_translation, source, review_status)
+            VALUES (?, ?, 'Imported sentence.', '取り込み例文。', 'imported', 'approved')
+            """,
+            (word_id, meaning_id),
+        ).lastrowid
+        ai_example_id = insert_ai_example(
+            conn,
+            word_id,
+            meaning_id,
+            "AI generated sentence.",
+            "AI生成例文。",
+        )
+        conn.execute(
+            """
+            INSERT INTO audio_assets (word_id, example_id, asset_type, ref)
+            VALUES (?, ?, 'example', '[sound:example.mp3]')
+            """,
+            (word_id, imported_example_id),
+        )
+        conn.execute(
+            """
+            INSERT INTO audio_assets (word_id, example_id, asset_type, ref)
+            VALUES (?, ?, 'example', '[sound:example2.mp3]')
+            """,
+            (word_id, ai_example_id),
+        )
+
+    payload = build_review_payload(db_path)
+    example_sources = {example["source"] for example in payload["words"][0]["examples"]}
+
+    assert example_sources == {"imported", "ai_generated"}
 
 
 def _insert_word(
