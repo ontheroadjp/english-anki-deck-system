@@ -26,5 +26,5 @@ venv/
 *.sqlite3-wal
 
 # Generated review/export artifacts
-web/review/vocabulary.json
+frontend/review/vocabulary.json
 generated.csv

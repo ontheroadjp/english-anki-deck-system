@@ -2,19 +2,19 @@
 
 ## Product Purpose
 
-This repository manages an English vocabulary database for university entrance exam learners. The current implemented workflow stores vocabulary data in SQLite, imports Anki TSV source data, validates the stored data, exports review JSON, and displays that JSON in a local browser review UI (`vocabdb/db.py:7-102`, `vocabdb/importers.py:43-61`, `vocabdb/validation.py:17-106`, `vocabdb/exporters.py:10-56`, `web/review/index.html:11-31`).
+This repository manages an English vocabulary database for university entrance exam learners. The current implemented workflow stores vocabulary data in SQLite, imports Anki TSV source data, validates the stored data, exports review JSON, and displays that JSON in a local browser review UI (`backend/vocabdb/db.py:7-103`, `backend/vocabdb/importers.py:43-61`, `backend/vocabdb/validation.py:17-106`, `backend/vocabdb/exporters.py:10-56`, `frontend/review/index.html:11-35`).
 
 ## Target Users
 
-The implemented data source is an Anki export for an English wordbook deck, and the importer maps fields such as headword, pronunciation, Japanese meaning, example sentence, example translation, wordbook metadata, and audio references into the database (`anki_csv/target_1900_6th.txt:1-7`, `vocabdb/importers.py:12-34`, `vocabdb/importers.py:64-142`). The practical target user is therefore a maintainer reviewing exam-oriented vocabulary entries before downstream export or study use.
+The implemented data source is an Anki export for an English wordbook deck, and the importer maps fields such as headword, pronunciation, Japanese meaning, example sentence, example translation, wordbook metadata, and audio references into the database (`backend/anki_csv/target_1900_6th.txt`, `backend/vocabdb/importers.py:12-34`, `backend/vocabdb/importers.py:64-142`). The practical target user is therefore a maintainer reviewing exam-oriented vocabulary entries before downstream export or study use.
 
 ## Problem Solved
 
-The project provides a structured review pipeline instead of treating cards as a flat CSV. The schema separates words, meanings, examples, wordbook entries, audio assets, and generation review records (`vocabdb/db.py:10-86`). This separation exists so import, validation, JSON export, and visual review can operate on normalized data rather than a single denormalized note row.
+The project provides a structured review pipeline instead of treating cards as a flat CSV. The schema separates words, meanings, examples, wordbook entries, audio assets, and generation review records (`backend/vocabdb/db.py:10-87`). This separation exists so import, validation, JSON export, and visual review can operate on normalized data rather than a single denormalized note row.
 
 ## Current Output Priority
 
-The current output surface is review JSON plus a static web UI. The CLI exports `web/review/vocabulary.json` by default (`vocabdb/cli.py:15-16`, `vocabdb/cli.py:33-35`), and the web app fetches `vocabulary.json` and renders word cards with search and review-status filtering (`web/review/app.js:12-27`, `web/review/app.js:39-68`).
+The current output surface is review JSON plus a static web UI. The CLI exports to `../frontend/review/vocabulary.json` by default when run from `backend/` (`backend/vocabdb/cli.py:15-16`, `backend/vocabdb/cli.py:33-35`), and the web app fetches `vocabulary.json` and renders word cards or a per-example table with search and review-status filtering (`frontend/review/app.js:31-89`, `frontend/review/app.js:91-138`).
 
 ## Unconfirmed
 

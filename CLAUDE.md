@@ -25,20 +25,25 @@
 
 - SQLite を語彙データの source of truth として扱う。生成された `vocabulary.db` は git 管理しない。
 - v1 の出力は review JSON と静的 Web review UI である。Anki CSV export は現在の実装には存在しない。
-- `web/review/vocabulary.json` は生成物であり、DB から再生成する。
+- `frontend/review/vocabulary.json` は生成物であり、DB から再生成する。
 - Anki の `[sound:...]` は URL として扱わず、audio ref として保存する。
 - 例文レビュー状態は `draft` / `approved` / `rejected` に揃える。
 
 ## 実行コマンド
 
+すべて `backend/` をカレントとして実行する。
+
 ```bash
+cd backend
 python -m vocabdb init-db --db vocabulary.db
 python -m vocabdb import-anki anki_csv/target_1900_6th.txt --db vocabulary.db
 python -m vocabdb validate --db vocabulary.db
-python -m vocabdb export-json --db vocabulary.db --output web/review/vocabulary.json
+python -m vocabdb export-json --db vocabulary.db
 python -m vocabdb serve-review
 pytest
 ```
+
+`export-json` の出力先は既定で `../frontend/review/vocabulary.json`、`serve-review` の配信ディレクトリは既定で `../frontend/review` を指す。
 
 ## 未確認事項
 

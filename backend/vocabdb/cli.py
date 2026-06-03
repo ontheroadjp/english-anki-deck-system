@@ -13,7 +13,7 @@ from .validation import validate_db
 
 
 DEFAULT_DB = Path("vocabulary.db")
-DEFAULT_REVIEW_JSON = Path("web/review/vocabulary.json")
+DEFAULT_REVIEW_JSON = Path("../frontend/review/vocabulary.json")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
     export_parser.add_argument("--output", default=DEFAULT_REVIEW_JSON)
 
     serve_parser = subcommands.add_parser("serve-review", help="Serve the static review UI.")
-    serve_parser.add_argument("--directory", default="web/review")
+    serve_parser.add_argument("--directory", default="../frontend/review")
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8000)
 
