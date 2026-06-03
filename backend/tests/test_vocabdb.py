@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 
@@ -222,6 +223,26 @@ def test_api_returns_404_for_missing_word(tmp_path):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Word not found"}
+
+
+def test_api_allows_browser_fetch_from_static_frontend(tmp_path):
+    db_path = tmp_path / "vocabulary.db"
+    init_db(db_path)
+    client = TestClient(create_app(db_path))
+
+    response = client.get("/api/words", headers={"Origin": "http://localhost:8000"})
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "*"
+
+
+def test_review_ui_loads_words_from_api():
+    app_js = (Path(__file__).parents[2] / "frontend" / "review" / "app.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'new URL("/api/words", apiBaseUrl)' in app_js
+    assert "vocabulary.json" not in app_js
 
 
 def _insert_word(

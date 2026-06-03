@@ -4,12 +4,19 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from .db import connect
 
 
 def create_app(db_path: str | Path) -> FastAPI:
     app = FastAPI(title="Vocabulary DB API")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET"],
+        allow_headers=["*"],
+    )
     app.state.db_path = Path(db_path)
 
     @app.get("/api/health")
