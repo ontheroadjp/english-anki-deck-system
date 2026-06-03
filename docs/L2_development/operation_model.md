@@ -42,7 +42,7 @@ All CLI invocations assume the working directory is `backend/`. The defaults for
    cd backend && python -m vocabdb serve-api --db vocabulary.db
    ```
 
-   The default API base is `http://localhost:8001`, and the API exposes `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-52`).
+   The default API base is `http://localhost:8001`, and the API exposes `/api/health`, `/api/words`, and `/api/words/{lookup}`. `lookup` can be a numeric word id or a headword (`backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-73`).
 
 6. Serve the review UI in another terminal:
 

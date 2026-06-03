@@ -10,7 +10,7 @@
 - Anki TSV import for the current source data in `backend/anki_csv/target_1900_6th.txt` (`backend/vocabdb/importers.py:12-61`).
 - Data validation for duplicate headwords, missing pronunciation, missing example translations, and missing audio refs (`backend/vocabdb/validation.py:17-106`).
 - Review JSON export with `vocabdb.review.v1` metadata and nested word data (`backend/vocabdb/exporters.py:10-56`).
-- FastAPI REST API with `/api/health`, `/api/words`, and `/api/words/{word_id}` endpoints backed by API-specific SQLite queries (`backend/vocabdb/api.py:10-124`).
+- FastAPI REST API with `/api/health`, `/api/words`, and `/api/words/{lookup}` endpoints backed by API-specific SQLite queries (`backend/vocabdb/api.py:10-147`).
 - Static browser review UI that loads words from the REST API, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-141`).
 
 ## Installation
@@ -57,7 +57,7 @@ Serve the REST API locally:
 cd backend && python -m vocabdb serve-api --db vocabulary.db
 ```
 
-The default API server binds to `localhost:8001` and exposes `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/cli.py:17`, `backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-52`).
+The default API server binds to `localhost:8001` and exposes `/api/health`, `/api/words`, and `/api/words/{lookup}`. `lookup` can be a numeric word id or a headword such as `happy` (`backend/vocabdb/cli.py:17`, `backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-73`).
 
 Serve the review UI locally in a second terminal (defaults to serving `../frontend/review`):
 
@@ -77,7 +77,7 @@ cd backend && pytest
 
 - SQLite is the source of truth for normalized vocabulary data. The schema keeps words, meanings, examples, source wordbook metadata, audio refs, and generation review status separate so review and export logic can query them consistently (`backend/vocabdb/db.py:10-87`).
 - JSON review output is the v1 output surface. Generated SQLite files and review JSON are ignored because they are local artifacts (`.gitignore:17-30`).
-- The REST API is a separate serving surface from the review JSON exporter and uses API-specific SQLite queries (`backend/vocabdb/api.py:10-124`).
+- The REST API is a separate serving surface from the review JSON exporter and uses API-specific SQLite queries (`backend/vocabdb/api.py:10-147`).
 - Imported Anki audio values are preserved as refs, not treated as public URLs. The audio schema has both `ref` and `url`, and the importer stores Anki sound fields in `ref` (`backend/vocabdb/db.py:66-73`, `backend/vocabdb/importers.py:141-142`, `backend/vocabdb/importers.py:181-194`).
 - AI-generated example review is represented as explicit status values: `draft`, `approved`, and `rejected` (`backend/vocabdb/db.py:43-44`, `backend/vocabdb/db.py:78-87`).
 
