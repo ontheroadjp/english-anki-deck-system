@@ -30,19 +30,19 @@ The SQLite schema is stored as a SQL string in `backend/vocabdb/db.py` and execu
 
 ## REST API
 
-`backend/vocabdb/api.py` defines `create_app(db_path)`, which returns a FastAPI application and stores the SQLite path on `app.state.db_path` (`backend/vocabdb/api.py:10-12`). The API surface is read-only and uses API-specific SQLite queries instead of calling the review JSON exporter (`backend/vocabdb/api.py:14-124`).
+`backend/vocabdb/api.py` defines `create_app(db_path)`, which returns a FastAPI application, enables browser GET access through CORS middleware, and stores the SQLite path on `app.state.db_path` (`backend/vocabdb/api.py:10-19`). The API surface is read-only and uses API-specific SQLite queries instead of calling the review JSON exporter (`backend/vocabdb/api.py:21-131`).
 
 Implemented endpoints:
 
-- `GET /api/health`: returns `{"status": "ok"}` (`backend/vocabdb/api.py:14-16`).
-- `GET /api/words`: returns `metadata.word_count` and a `words` array ordered by word id (`backend/vocabdb/api.py:18-31`).
-- `GET /api/words/{word_id}`: returns one word record or raises HTTP 404 with `detail = "Word not found"` when the id does not exist (`backend/vocabdb/api.py:33-45`).
+- `GET /api/health`: returns `{"status": "ok"}` (`backend/vocabdb/api.py:21-23`).
+- `GET /api/words`: returns `metadata.word_count` and a `words` array ordered by word id (`backend/vocabdb/api.py:25-38`).
+- `GET /api/words/{word_id}`: returns one word record or raises HTTP 404 with `detail = "Word not found"` when the id does not exist (`backend/vocabdb/api.py:40-52`).
 
-Each word response includes the word fields plus nested `meanings`, `examples`, `wordbooks`, and `audio` data assembled from the normalized SQLite tables (`backend/vocabdb/api.py:49-124`). The `serve-api` CLI command imports Uvicorn and the FastAPI app factory at runtime, then runs the app with the configured host and port (`backend/vocabdb/cli.py:93-101`).
+Each word response includes the word fields plus nested `meanings`, `examples`, `wordbooks`, and `audio` data assembled from the normalized SQLite tables (`backend/vocabdb/api.py:56-131`). The `serve-api` CLI command imports Uvicorn and the FastAPI app factory at runtime, then runs the app with the configured host and port (`backend/vocabdb/cli.py:93-101`).
 
 ## Web Review UI
 
-The static UI declares a search box, a review-status filter, and a Cards / Table tab strip in HTML, with two sibling view sections (`frontend/review/index.html:11-35`). JavaScript fetches `vocabulary.json`, stores words in memory, filters by text and review status, and dispatches rendering by active view (`frontend/review/app.js:31-89`). The card renderer outputs one card per word with meanings, examples, wordbook labels, and word audio refs (`frontend/review/app.js:164-208`). The table renderer outputs one row per example with twelve columns including headword, pronunciation, part of speech, exam level, meanings, example sentence, example translation, source badge, status badge, wordbook label, word audio refs, and example audio refs (`frontend/review/app.js:91-138`). Example audio in the table view is joined from `word.audio.examples` by `example_id` (`frontend/review/app.js:117-121`).
+The static UI declares a search box, a review-status filter, and a Cards / Table tab strip in HTML, with two sibling view sections (`frontend/review/index.html:11-35`). JavaScript fetches `/api/words` from the configured API base, stores words in memory, filters by text and review status, and dispatches rendering by active view (`frontend/review/app.js:31-92`). The default API base is `http://localhost:8001`, and callers can override it with the `api` query parameter (`frontend/review/app.js:31-32`). The card renderer outputs one card per word with meanings, examples, wordbook labels, and word audio refs (`frontend/review/app.js:167-211`). The table renderer outputs one row per example with twelve columns including headword, pronunciation, part of speech, exam level, meanings, example sentence, example translation, source badge, status badge, wordbook label, word audio refs, and example audio refs (`frontend/review/app.js:94-141`). Example audio in the table view is joined from `word.audio.examples` by `example_id` (`frontend/review/app.js:120-124`).
 
 ## Dependency Metadata
 

@@ -11,7 +11,7 @@
 - Data validation for duplicate headwords, missing pronunciation, missing example translations, and missing audio refs (`backend/vocabdb/validation.py:17-106`).
 - Review JSON export with `vocabdb.review.v1` metadata and nested word data (`backend/vocabdb/exporters.py:10-56`).
 - FastAPI REST API with `/api/health`, `/api/words`, and `/api/words/{word_id}` endpoints backed by API-specific SQLite queries (`backend/vocabdb/api.py:10-124`).
-- Static browser review UI that loads `vocabulary.json`, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`frontend/review/index.html:11-35`, `frontend/review/app.js:60-138`).
+- Static browser review UI that loads words from the REST API, supports text search, filters examples by review status, and offers card and table views selectable via a tab strip (`frontend/review/index.html:11-35`, `frontend/review/app.js:31-141`).
 
 ## Installation
 
@@ -45,19 +45,11 @@ Validate imported vocabulary data:
 cd backend && python -m vocabdb validate --db vocabulary.db
 ```
 
-Export review JSON for the web UI (defaults to `../frontend/review/vocabulary.json`):
+Export review JSON as a local artifact (defaults to `../frontend/review/vocabulary.json`):
 
 ```bash
 cd backend && python -m vocabdb export-json --db vocabulary.db
 ```
-
-Serve the review UI locally (defaults to serving `../frontend/review`):
-
-```bash
-cd backend && python -m vocabdb serve-review
-```
-
-The default review server binds to `127.0.0.1:8000` and serves `../frontend/review/` (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`).
 
 Serve the REST API locally:
 
@@ -65,7 +57,15 @@ Serve the REST API locally:
 cd backend && python -m vocabdb serve-api --db vocabulary.db
 ```
 
-The default API server binds to `localhost:8001` and exposes `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/cli.py:17`, `backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:13-45`).
+The default API server binds to `localhost:8001` and exposes `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/cli.py:17`, `backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-52`).
+
+Serve the review UI locally in a second terminal (defaults to serving `../frontend/review`):
+
+```bash
+cd backend && python -m vocabdb serve-review
+```
+
+The default review server serves `../frontend/review/`, and the UI fetches API data from `http://localhost:8001/api/words` by default. Add `?api=<base-url>` to the review UI URL to point at a different API base (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`, `frontend/review/app.js:31-32`).
 
 Run tests:
 
@@ -90,5 +90,5 @@ cd backend && pytest
    - API layer: `backend/vocabdb/api.py` creates the FastAPI app and serializes SQLite records for REST responses.
    - CLI entrypoint: `python -m vocabdb` dispatches `init-db`, `import-anki`, `validate`, `export-json`, `serve-review`, and `serve-api` (`backend/vocabdb/__main__.py:1-3`, `backend/vocabdb/cli.py:20-86`).
 2. Frontend (`frontend/`):
-   - `frontend/review/` renders the generated review JSON in the browser (`frontend/review/index.html:1-39`, `frontend/review/app.js:31-138`).
-3. Tests: `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-224`).
+   - `frontend/review/` renders REST API word data in the browser (`frontend/review/index.html:1-39`, `frontend/review/app.js:31-141`).
+3. Tests: `backend/tests/test_vocabdb.py` (`backend/tests/test_vocabdb.py:1-296`).

@@ -28,7 +28,7 @@ All CLI invocations assume the working directory is `backend/`. The defaults for
 
    The command prints each validation issue and exits with status `1` when issues exist (`backend/vocabdb/cli.py:54-65`).
 
-4. Export review JSON:
+4. Export review JSON when a local JSON artifact is needed:
 
    ```bash
    cd backend && python -m vocabdb export-json --db vocabulary.db
@@ -36,13 +36,21 @@ All CLI invocations assume the working directory is `backend/`. The defaults for
 
    The default output path is `../frontend/review/vocabulary.json` (`backend/vocabdb/cli.py:16`, `backend/vocabdb/cli.py:35`). The exporter writes formatted UTF-8 JSON with `ensure_ascii=False` (`backend/vocabdb/exporters.py:48-56`).
 
-5. Serve the review UI:
+5. Serve the REST API:
+
+   ```bash
+   cd backend && python -m vocabdb serve-api --db vocabulary.db
+   ```
+
+   The default API base is `http://localhost:8001`, and the API exposes `/api/health`, `/api/words`, and `/api/words/{word_id}` (`backend/vocabdb/cli.py:43-47`, `backend/vocabdb/api.py:14-52`).
+
+6. Serve the review UI in another terminal:
 
    ```bash
    cd backend && python -m vocabdb serve-review
    ```
 
-   The default host and port are `127.0.0.1` and `8000`, and the default served directory is `../frontend/review` (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`).
+   The default served directory is `../frontend/review`. The static UI fetches word data from the API base and supports overriding that base with the `api` query parameter (`backend/vocabdb/cli.py:37-40`, `backend/vocabdb/cli.py:80-84`, `frontend/review/app.js:31-48`).
 
 ## Test Command
 
@@ -50,13 +58,13 @@ All CLI invocations assume the working directory is `backend/`. The defaults for
 cd backend && pytest
 ```
 
-The test suite imports the local `vocabdb` package because `backend/pyproject.toml` sets `pythonpath = ["."]` for pytest (`backend/pyproject.toml:1-2`).
+The test suite imports the local `vocabdb` package because `backend/pyproject.toml` sets `pythonpath = ["."]` for pytest, and it uses FastAPI's `TestClient` for API coverage (`backend/pyproject.toml:19-20`, `backend/tests/test_vocabdb.py:5-11`).
 
 ## Generated Files
 
-The database and review JSON are local generated files and should not be committed (`.gitignore:17-30`).
+The database, review JSON, and Python egg-info metadata are local generated files and should not be committed (`.gitignore:5-30`).
 
 ## Unconfirmed
 
 - CI execution is unconfirmed because no `.github/workflows/` directory exists.
-- Reproducible environment setup is unconfirmed because no lock file or dependency manifest pins pytest or Python versions.
+- Reproducible environment setup is unconfirmed because no lock file pins dependency versions.
