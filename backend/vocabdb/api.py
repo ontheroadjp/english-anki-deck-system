@@ -40,22 +40,39 @@ def create_app(db_path: str | Path) -> FastAPI:
             "words": words,
         }
 
-    @app.get("/api/words/{word_id}")
-    def get_word(word_id: int) -> dict[str, Any]:
+    @app.get("/api/words/{lookup}")
+    def get_word(lookup: str) -> dict[str, Any]:
         with connect(app.state.db_path) as conn:
-            word = conn.execute(
-                """
-                SELECT id, headword, lemma, pronunciation, part_of_speech, eiken, exam_level
-                FROM words
-                WHERE id = ?
-                """,
-                (word_id,),
-            ).fetchone()
+            word = _find_word(conn, lookup)
             if word is None:
                 raise HTTPException(status_code=404, detail="Word not found")
+            word_id = word["id"]
             return _build_word(conn, word_id, word)
 
     return app
+
+
+def _find_word(conn, lookup: str):
+    if lookup.isdecimal():
+        return conn.execute(
+            """
+            SELECT id, headword, lemma, pronunciation, part_of_speech, eiken, exam_level
+            FROM words
+            WHERE id = ?
+            """,
+            (int(lookup),),
+        ).fetchone()
+
+    return conn.execute(
+        """
+        SELECT id, headword, lemma, pronunciation, part_of_speech, eiken, exam_level
+        FROM words
+        WHERE lower(headword) = lower(?)
+        ORDER BY id
+        LIMIT 1
+        """,
+        (lookup,),
+    ).fetchone()
 
 
 def _build_word(conn, word_id: int, word) -> dict[str, Any]:
